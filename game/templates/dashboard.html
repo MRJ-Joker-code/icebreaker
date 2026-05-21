@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arcade Dashboard | {{ nickname }}</title>
+    <style>
+        :root {
+            --bg-base: #0f111a;
+            --bg-surface: #161925;
+            --bg-card: #1f2336;
+            --primary: #6366f1;
+            --primary-glow: rgba(99, 102, 241, 0.3);
+            --accent-green: #10b981;
+            --accent-pink: #ec4899;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --sidebar-width: 280px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* --- SIDEBAR PANEL --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: var(--bg-surface);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 40px 24px;
+            position: fixed;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        .brand-logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, #a855f7, var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .user-badge {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            margin-bottom: 40px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            margin-bottom: 8px;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-link.logout {
+            margin-top: auto;
+            color: #ef4444;
+        }
+        .nav-link.logout:hover { background: rgba(239, 68, 68, 0.1); }
+
+        /* --- MAIN CONTENT LAYOUT --- */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 60px;
+            max-width: 1400px;
+        }
+
+        /* --- TOP HEADER NAVBAR BAR --- */
+        .top-navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 40px;
+            margin-bottom: 48px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 24px;
+        }
+
+        .header-title-block h1 { font-size: 2.5rem; font-weight: 800; letter-spacing: -0.025em; margin-bottom: 8px; }
+        .header-title-block p { color: var(--text-muted); font-size: 1.1rem; }
+
+        /* --- INTEGRATED CORNER JOIN PANEL --- */
+        .top-join-panel {
+            background: var(--bg-surface);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 16px 24px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .top-join-panel label {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-main);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .top-join-form {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .join-input-inline {
+            width: 110px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 10px;
+            border-radius: 8px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-align: center;
+            text-transform: uppercase;
+            transition: all 0.2s;
+        }
+
+        .join-input-inline:focus {
+            outline: none;
+            border-color: var(--accent-pink);
+            box-shadow: 0 0 10px rgba(236, 72, 153, 0.2);
+        }
+
+        .btn-join-inline {
+            background: var(--accent-pink);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-join-inline:hover {
+            background: #db2777;
+            box-shadow: 0 0 15px rgba(236, 72, 153, 0.4);
+        }
+
+        /* --- GAME GRID SYSTEM --- */
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 32px;
+        }
+
+        .game-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.25s;
+        }
+
+        .game-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(99, 102, 241, 0.4);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 0 30px var(--primary-glow);
+        }
+
+        .card-banner {
+            height: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.5rem;
+            position: relative;
+        }
+
+        /* Pure CSS Design Tokens pulling from our dynamic class context keys */
+        .banner-math { background: linear-gradient(135deg, #1e1b4b, #311042); }
+        .banner-truth { background: linear-gradient(135deg, #4c0519, #1c053a); }
+        .banner-most { background: linear-gradient(135deg, #022c22, #064e3b); }
+        .banner-default { background: linear-gradient(135deg, #062f4f, #0f172a); }
+
+        .card-body {
+            padding: 28px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            text-align: left;
+        }
+
+        .card-body h3 { font-size: 1.3rem; font-weight: 700; margin-bottom: 8px; }
+
+        .prompt-count-tag {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--accent-green);
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .card-body p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 24px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* --- CARD CTA LINKS --- */
+        .btn {
+            display: block;
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            padding: 14px;
+            border-radius: 10px;
+            text-align: center;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            margin-top: auto;
+        }
+        .btn:hover { background: #4f46e5; }
+        .btn:active { transform: scale(0.98); }
+
+        /* --- EMPTY STATE MODULE --- */
+        .empty-state {
+            grid-column: 1 / -1;
+            background: var(--bg-surface);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        /* --- RESPONSIVE APP PIPELINES --- */
+        @media (max-width: 968px) {
+            body { flex-direction: column; }
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                padding: 20px;
+                border-right: none;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            }
+            .user-badge, .nav-link.logout { margin-bottom: 0; margin-top: 10px; }
+            .main-content { margin-left: 0; padding: 32px 20px; }
+            .top-navbar { flex-direction: column; align-items: flex-start; gap: 20px; }
+            .top-join-panel { width: 100%; justify-content: space-between; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div>
+            <div class="brand-logo">🕹️ PARTY CENTRAL</div>
+            <div class="user-badge">
+                Logged in as <strong style="color: white;">{{ nickname }}</strong>
+            </div>
+        </div>
+        <a href="#" class="nav-link active">🏠 Dashboard</a>
+        <a href="#" class="nav-link">⚙️ Settings</a>
+        <a href="{% url 'logout' %}" class="nav-link logout">🚪 Logout</a>
+    </nav>
+
+    <main class="main-content">
+        <!-- HEADER ACTION NAVIGATION BAR -->
+        <div class="top-navbar">
+            <div class="header-title-block">
+                <h1>Select a Game</h1>
+                <p>Browse game rooms or join a friend's active session lobby instantly.</p>
+            </div>
+
+            <div class="top-join-panel">
+                <label>Join Room:</label>
+                <form action="{% url 'join_room' %}" method="POST" class="top-join-form">
+                    {% csrf_token %}
+                    <input type="text" name="room_code" class="join-input-inline" maxlength="4" placeholder="code" required autocomplete="off">
+                    <button type="submit" class="btn-join-inline">Connect</button>
+                </form>
+            </div>
+        </div>
+
+        <section class="game-grid">
+            <!-- Django Dictionary unpacking loop iterating over your structured content keys -->
+            {% for game_key, game_info in games.items %}
+            <article class="game-card">
+                <!-- Pulls customized layout classes directly out of python object configuration mapping -->
+                <div class="card-banner {{ game_info.banner_class }}">
+                    {{ game_info.emoji }}
+                </div>
+                <div class="card-body">
+                    <h3>{{ game_info.title }}</h3>
+                    <div class="prompt-count-tag">🗂️ {{ game_info.questions|length }} Cards Available</div>
+                    <p>{{ game_info.description }}</p>
+
+                    <!-- Hits the unique intermediate step route instead of auto-creating standard rooms -->
+                    <a href="{% url 'game_detail' game_key %}" class="btn">View Game Info</a>
+                </div>
+            </article>
+            {% empty %}
+            <div class="empty-state">
+                <p style="font-size: 1.1rem; margin-bottom: 8px; color: white;">👾 Active Game Catalog Offline</p>
+                <p>Register valid structures inside your views <code>GAMES_LIBRARY</code> tracking dictionary layout.</p>
+            </div>
+            {% endfor %}
+        </section>
+    </main>
+
+</body>
+</html>

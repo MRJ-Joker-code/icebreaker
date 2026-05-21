@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ICEBREAKER</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bungee&family=Inter:wght@400;700;900&display=swap');
+        :root { --accent: #d4af37; --bg: #0f1012; --panel: #1e2024; --text: #ffffff; --mine: rgba(212, 175, 55, 0.18); --theirs: rgba(255, 255, 255, 0.05); }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); font-family: 'Inter', sans-serif; margin: 0; color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+        .app-shell { display: grid; grid-template-columns: 1.3fr 1fr; gap: 20px; width: 100%; max-width: 1400px; height: 100vh; padding: 20px; margin: 0 auto; }
+
+        /* --- GAME LAYOUT --- */
+        .game-column { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 0; }
+        .game-header { width: 100%; max-width: 500px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
+        .turn-label { font-family: 'Bungee'; color: var(--accent); font-size: clamp(0.7rem, 2vw, 0.9rem); }
+
+        .main-card { background: var(--panel); width: 100%; max-width: 500px; min-height: 280px; border-radius: 24px; border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; padding: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); transition: 0.3s; position: relative; }
+        .prompt-text { font-size: clamp(1.2rem, 5vw, 1.8rem); font-weight: 900; text-align: center; line-height: 1.3; }
+
+        /* --- CHAT LAYOUT --- */
+        .chat-column { background: var(--panel); border-radius: 24px; display: flex; flex-direction: column; height: 100%; border: 1px solid rgba(255,255,255,0.05); overflow: hidden; position: relative; }
+        #chat-feed { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; }
+
+        .bubble { max-width: 85%; padding: 12px 16px; font-size: 0.95rem; border-radius: 18px; line-height: 1.4; }
+        .bubble.mine { align-self: flex-end; background: var(--mine); border-bottom-right-radius: 4px; border-right: 3px solid var(--accent); text-align: right; }
+        .bubble.theirs { align-self: flex-start; background: var(--theirs); border-bottom-left-radius: 4px; border-left: 3px solid var(--accent); }
+        .bubble b { display: block; font-size: 0.7rem; color: var(--accent); margin-bottom: 4px; text-transform: uppercase; }
+
+        /* --- UI COMPONENTS --- */
+        .btn-gold { background: var(--accent); color: #000; border: none; padding: 12px 24px; border-radius: 12px; font-family: 'Bungee'; cursor: pointer; font-size: 0.9rem; }
+        .btn-outline { background: transparent; color: var(--accent); border: 2px solid var(--accent); padding: 10px 20px; border-radius: 12px; font-family: 'Bungee'; cursor: pointer; }
+        .btn-danger-sm { background: #ff4d4d; color: white; border: none; padding: 6px 12px; border-radius: 8px; font-family: 'Bungee'; font-size: 0.6rem; cursor: pointer; }
+        .btn-leave-sm { background: transparent; color: #888; border: 1px solid #444; padding: 6px 12px; border-radius: 8px; font-family: 'Bungee'; font-size: 0.6rem; cursor: pointer; }
+
+        #msgToast { position: absolute; bottom: 85px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #000; padding: 8px 16px; border-radius: 30px; font-family: 'Bungee'; font-size: 0.7rem; display: none; z-index: 10; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+
+        .shuffling { transform: scale(0.96) rotate(1deg); opacity: 0.7; filter: blur(0.5px); }
+
+        /* --- RESPONSIVE OVERRIDES --- */
+        @media (max-width: 900px) {
+            body { overflow-y: auto; height: auto; }
+            .app-shell { display: flex; flex-direction: column; height: auto; padding: 10px; gap: 15px; }
+            .chat-column { height: 480px; margin-bottom: 20px; }
+            .main-card { min-height: 220px; padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-shell">
+        <div class="game-column">
+            <div class="game-header">
+                <div class="turn-label" id="turnDisplay">TURN: {{ current_player.user.username|upper }}</div>
+                <div>
+                    {% if is_host %}
+                        <button class="btn-danger-sm" onclick="handleAction('end_game')">END GAME</button>
+                    {% else %}
+                        <button class="btn-leave-sm" onclick="handleAction('leave_game')">LEAVE</button>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="main-card" id="cardElement">
+                <div class="prompt-text" id="promptArea">{{ prompt }}</div>
+            </div>
+
+            {% if is_host %}
+            <div style="margin-top:20px; display:flex; gap:10px; width: 100%; max-width: 500px;">
+                <button class="btn-outline" style="flex:1" onclick="handleAction('shuffle')">SHUFFLE</button>
+                <button class="btn-gold" style="flex:2" onclick="handleAction('next_turn')">NEXT CARD</button>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="chat-column">
+            <div id="msgToast" onclick="scrollToBottom()">NEW MESSAGES ↓</div>
+            <div id="chat-feed"></div>
+            <div style="padding:15px; background:rgba(0,0,0,0.3); display:flex; gap:10px;">
+                <input type="text" id="chatInput" style="flex:1; background:var(--bg); border:1px solid #444; color:white; padding:12px; border-radius:10px; outline:none;" placeholder="Say something..." onkeypress="if(event.key==='Enter') sendMsg(this.value)">
+                <button class="btn-gold" onclick="sendMsg(document.getElementById('chatInput').value)">SEND</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const me = "{{ request.user.username }}";
+        let localPrompt = "{{ prompt|escapejs }}";
+        let lastMsgCount = 0;
+
+        function scrollToBottom() {
+            const f = document.getElementById('chat-feed');
+            f.scrollTop = f.scrollHeight;
+            document.getElementById('msgToast').style.display = 'none';
+        }
+
+        async function handleAction(type) {
+            if((type === 'end_game' || type === 'leave_game') && !confirm("Are you sure?")) return;
+
+            const card = document.getElementById('cardElement');
+            if(type !== 'leave_game') card.classList.add('shuffling');
+
+            const fd = new FormData();
+            fd.append('action', type);
+            fd.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+            const r = await fetch(window.location.href, {
+                method: 'POST',
+                body: fd,
+                headers: {'X-Requested-With': 'XMLHttpRequest'}
+            });
+
+            // Redirect anyone who clicks Leave or End Game immediately
+            if(type === 'end_game' || type === 'leave_game') {
+                window.location.href = "{% url 'dashboard' %}";
+                return;
+            }
+
+            setTimeout(() => card.classList.remove('shuffling'), 300);
+            syncGame();
+        }
+
+        async function syncGame() {
+            try {
+                const r = await fetch("{% url 'get_room_status' room.room_code %}");
+                const d = await r.json();
+
+                // If game is finished, auto-redirect everyone to dashboard
+                if (d.status === 'FINISHED') {
+                    window.location.href = "{% url 'dashboard' %}";
+                    return;
+                }
+
+                if (d.prompt && d.prompt !== localPrompt) {
+                    document.getElementById('promptArea').innerText = d.prompt;
+                    localPrompt = d.prompt;
+                }
+                if (d.current_player) {
+                    document.getElementById('turnDisplay').innerText = `TURN: ${d.current_player.toUpperCase()}`;
+                }
+            } catch (e) {}
+        }
+
+        async function sendMsg(val) {
+            if(!val.trim()) return;
+            const fd = new FormData();
+            fd.append('content', val);
+            fd.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+            await fetch("{% url 'send_message' room.room_code %}", {method:'POST', body:fd});
+            document.getElementById('chatInput').value = '';
+            syncChat();
+        }
+
+        async function syncChat() {
+            try {
+                const r = await fetch("{% url 'get_messages' room.room_code %}");
+                const d = await r.json();
+                const f = document.getElementById('chat-feed');
+                const isAtBottom = f.scrollHeight - f.clientHeight <= f.scrollTop + 65;
+
+                if (d.messages.length > lastMsgCount) {
+                    f.innerHTML = d.messages.map(m => `
+                        <div class="bubble ${m.user === me ? 'mine' : 'theirs'}">
+                            <b>${m.user === me ? 'You' : m.user}</b>
+                            ${m.content}
+                        </div>
+                    `).join('');
+
+                    if (isAtBottom) scrollToBottom();
+                    else if (lastMsgCount > 0) document.getElementById('msgToast').style.display = 'block';
+
+                    lastMsgCount = d.messages.length;
+                }
+            } catch (e) {}
+        }
+
+        // Hide toast if user scrolls to bottom manually
+        document.getElementById('chat-feed').addEventListener('scroll', function() {
+            if (this.scrollHeight - this.clientHeight <= this.scrollTop + 20) {
+                document.getElementById('msgToast').style.display = 'none';
+            }
+        });
+
+        // Background Polling
+        setInterval(syncChat, 2000);
+        setInterval(syncGame, 1000);
+
+        // Init
+        syncChat();
+        syncGame();
+    </script>
+</body>
+</html>

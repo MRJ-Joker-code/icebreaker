@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Party Games</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #111;
+            color: white;
+            text-align: center;
+            padding-top: 80px;
+        }
+
+        .box {
+            background: #222;
+            width: 350px;
+            margin: auto;
+            padding: 25px;
+            border-radius: 10px;
+        }
+
+        input, button {
+            width: 90%;
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        button {
+            background: #00c853;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #00e676;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="box">
+    <h1>🎮 Party Games</h1>
+
+    <!-- CREATE ROOM -->
+    <div class="section">
+        <h3>Create Room</h3>
+        <form method="POST">
+            {% csrf_token %}
+            <input type="text" name="create_room" placeholder="Room name">
+            <button type="submit">Create</button>
+        </form>
+    </div>
+
+    <hr>
+
+    <!-- JOIN ROOM -->
+    <div class="section">
+        <h3>Join Room</h3>
+        <form method="GET" action="/join/">
+            <input type="text" name="room" placeholder="Enter room code">
+            <button type="submit">Join</button>
+        </form>
+    </div>
+
+</div>
+
+</body>
+</html>

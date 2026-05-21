@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create New Room </title>
+    <style>
+        :root {
+            --primary: #1a73e8;
+            --bg: #f8f9fa;
+            --text: #202124;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .create-card {
+            background: white;
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+        }
+
+        h1 { color: var(--text); margin-bottom: 10px; }
+        p { color: #5f6368; margin-bottom: 30px; }
+
+        .game-select-box {
+            text-align: left;
+            margin-bottom: 25px;
+        }
+
+        label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 10px;
+            color: #3c4043;
+        }
+
+        select {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            border: 2px solid #e0e0e0;
+            font-size: 16px;
+            appearance: none; /* Removes default arrow */
+            background-color: white;
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2370757a%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            cursor: pointer;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-submit:hover {
+            background: #1557b0;
+            transform: translateY(-2px);
+        }
+
+        .cancel-link {
+            display: block;
+            margin-top: 20px;
+            color: #70757a;
+            text-decoration: none;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="create-card">
+    <h1>Start a Game</h1>
+    <p>Select a game type to begin your session.</p>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <div class="game-select-box">
+            <label for="game_id">Choose Your Game</label>
+            <select name="game_id" id="game_id" required>
+                <option value="" disabled selected>-- Select a Game --</option>
+                {% for game in games %}
+                    <option value="{{ game.id }}">{{ game.title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <button type="submit" class="btn-submit">Generate Room Code</button>
+    </form>
+
+    <a href="{% url 'dashboard' %}" class="cancel-link">← Back to Dashboard</a>
+</div>
+
+</body>
+</html>

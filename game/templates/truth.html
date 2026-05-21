@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRUTH OR DARE</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bungee&family=Inter:wght@400;700;900&display=swap');
+
+        :root {
+            --td-bg: #4c0519; /* Very deep crimson berry wine */
+            --td-panel: #881337; /* Rich dark ruby red */
+            --td-accent: #f43f5e; /* Vibrant pinkish red */
+            --td-hotpink: #f472b6; /* High-visibility neon pink */
+            --truth-color: #10b981; /* Keeping green for safe-resource readability */
+            --dare-color: #f43f5e;
+        }
+
+        body {
+            margin: 0; background: var(--td-bg); color: white;
+            font-family: 'Inter', sans-serif; display: flex;
+            flex-direction: column; justify-content: center;
+            align-items: center; min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* --- TOP TURN DISPLAY BAR --- */
+        .turn-header {
+            background: linear-gradient(135deg, #e11d48, #db2777); /* Deep Red to Hot Pink neon gradient */
+            padding: 12px 35px;
+            border-radius: 50px;
+            font-family: 'Bungee', sans-serif;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+            box-shadow: 0 0 30px rgba(219, 39, 119, 0.4);
+            margin-bottom: 30px;
+            border: 2px solid var(--td-hotpink);
+            text-transform: uppercase;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            animation: pulseGlow 2s infinite alternate;
+        }
+
+        @keyframes pulseGlow {
+            from { box-shadow: 0 0 20px rgba(219, 39, 119, 0.4); }
+            to { box-shadow: 0 0 35px rgba(244, 114, 182, 0.7); }
+        }
+
+        /* --- THE HOT SEAT CARD --- */
+        .card {
+            background: var(--td-panel); width: 90%; max-width: 600px;
+            padding: 40px; border-radius: 40px; border: 4px solid var(--td-hotpink);
+            text-align: center; box-shadow: 0 0 80px rgba(244, 63, 94, 0.35);
+            position: relative; overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        /* --- SPIN ANIMATION --- */
+        .spin-anim { animation: spinName 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes spinName {
+            0% { transform: rotateX(0deg) scale(1); opacity: 1; }
+            50% { transform: rotateX(180deg) scale(0.5); opacity: 0.5; color: var(--td-hotpink); }
+            100% { transform: rotateX(360deg) scale(1); opacity: 1; }
+        }
+
+        .player-name { font-family: 'Bungee'; font-size: 3.5rem; color: #fff; text-shadow: 0 0 20px rgba(244, 114, 182, 0.8); margin: 15px 0; }
+        .prompt-text { font-size: 1.6rem; min-height: 120px; font-weight: 700; display: flex; align-items: center; justify-content: center; line-height: 1.3; color: #ffe4e6; }
+
+        /* --- RESOURCE BARS --- */
+        .resource-container { display: flex; gap: 20px; justify-content: center; margin-bottom: 30px; }
+        .bar-wrapper { width: 120px; text-align: left; }
+        .bar-label { font-size: 0.7rem; font-family: 'Bungee'; margin-bottom: 5px; display: block; opacity: 0.8; color: var(--td-hotpink); }
+        .bar-outer { background: rgba(0,0,0,0.4); height: 12px; border-radius: 6px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
+        .bar-inner { height: 100%; transition: width 0.5s ease; }
+
+        /* --- BUTTONS --- */
+        .choice-group { display: flex; gap: 15px; margin-top: 20px; }
+        .td-btn {
+            flex: 1; padding: 20px; border-radius: 18px; border: none;
+            font-family: 'Bungee'; cursor: pointer; transition: all 0.2s;
+            font-size: 1.1rem; color: white; box-shadow: 0 5px 0 rgba(0,0,0,0.3);
+        }
+        .td-btn:active { transform: translateY(3px); box-shadow: none; }
+        .td-btn:disabled { opacity: 0.15; cursor: not-allowed; filter: grayscale(1); box-shadow: none; }
+
+        .btn-truth { background: linear-gradient(135deg, #059669, var(--truth-color)); }
+        .btn-dare { background: linear-gradient(135deg, #e11d48, var(--dare-color)); }
+        .btn-next { background: linear-gradient(135deg, #7c3aed, #6366f1); width: 100%; margin-top: 15px; font-size: 0.9rem; }
+
+        /* --- DOUBLE DARE OVERLAY --- */
+        #double-dare-banner {
+            display: none; position: absolute; top: 0; left: 0; width: 100%;
+            background: #ffe4e6; font-family: 'Bungee'; font-size: 0.8rem; color: #9f1239;
+            padding: 8px 0; animation: flash 0.5s infinite alternate; font-weight: 900;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.2);
+        }
+        @keyframes flash { from { opacity: 0.7; } to { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <!-- DYNAMIC TOP TURN DISPLAY BANNER -->
+    <div class="turn-header">
+        <span>👉 ACTIVE TURN:</span>
+        <span id="active-turn-user" style="color: #fff; text-shadow: 0 0 10px #fff;">
+            {{ room.target_player.username|default:"???" }}
+        </span>
+    </div>
+
+    <div class="card">
+        <div id="double-dare-banner">⚠️ DOUBLE DARE ENFORCED ⚠️</div>
+
+        <h3 style="font-family:'Bungee'; opacity:0.6; margin:0; letter-spacing:2px; color: var(--td-hotpink);">IN THE HOT SEAT</h3>
+        <div id="target-player" class="player-name">{{ room.target_player.username|default:"???" }}</div>
+
+        <!-- RESOURCE BARS (DYNAMIC USER CAPACITY STATUS) -->
+        <div class="resource-container">
+            <div class="bar-wrapper">
+                <span class="bar-label">Truths Left</span>
+                <div class="bar-outer">
+                    <div id="truth-bar" class="bar-inner" style="background: var(--truth-color); width: calc({{ me.truths_remaining }} * 20%);"></div>
+                </div>
+            </div>
+            <div class="bar-wrapper">
+                <span class="bar-label">Dares Left</span>
+                <div class="bar-outer">
+                    <div id="dare-bar" class="bar-inner" style="background: var(--dare-color); width: calc({{ me.dares_remaining }} * 20%);"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="prompt-display" class="prompt-text">
+            {{ room.current_truth_dare|default:"Waiting for choice..." }}
+        </div>
+
+        <!-- CONTAINER FOR DYNAMIC INLINE GAME BUTTON INJECTION -->
+        <div id="controls-placement-zone">
+            {% if is_hot_seat %}
+            <div class="choice-group">
+                <button id="btn-truth" class="td-btn btn-truth" onclick="sendChoice('pick_truth')"
+                    {% if me.truth_streak >= 3 or me.truths_remaining <= 0 %}disabled{% endif %}>
+                    TRUTH
+                </button>
+                <button id="btn-dare" class="td-btn btn-dare" onclick="sendChoice('pick_dare')"
+                    {% if me.dares_remaining <= 0 %}disabled{% endif %}>
+                    DARE
+                </button>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- HOST CONTROLS -->
+        {% if is_host %}
+            <button class="td-btn btn-next" onclick="triggerSpin()">NEXT PLAYER</button>
+        {% endif %}
+    </div>
+
+    <script>
+        // Store current user identity configuration to prevent component rendering blinking
+        const current_user_session_name = "{{ request.user.username }}";
+
+        async function syncStatus() {
+            try {
+                // Fixed Cache Buster logic applied to secure actual database values
+                const res = await fetch("{% url 'get_room_status' room.room_code %}?_cb=" + Date.now());
+                if (!res.ok) return;
+
+                const data = await res.json();
+
+                // Kick out logic if session closes
+                if (data.status === 'FINISHED') {
+                    window.location.href = "{% url 'dashboard' %}";
+                    return;
+                }
+
+                // 1. FIXED TEMPLATE GUARD: Routes directly through layout coordinator view
+                if (data.game_type && data.game_type === 'most-likely') {
+                    console.log("[LAYOUT ENGINE] Re-routing state away from truth layout frame...");
+                    window.location.href = "{% url 'room_session' room.room_code %}";
+                    return;
+                }
+
+                const nameEl = document.getElementById('target-player');
+                const topTurnEl = document.getElementById('active-turn-user');
+                const promptEl = document.getElementById('prompt-display');
+                const ddBanner = document.getElementById('double-dare-banner');
+                const truthBar = document.getElementById('truth-bar');
+                const dareBar = document.getElementById('dare-bar');
+
+                // Spin tracking setup matches string target comparisons cleanly
+                if (nameEl && data.target_player && nameEl.innerText.trim() !== data.target_player.trim()) {
+                    nameEl.classList.remove('spin-anim');
+                    void nameEl.offsetWidth; // Clear browser painting layout thread context cache
+                    nameEl.classList.add('spin-anim');
+
+                    nameEl.innerText = data.target_player;
+                    if (topTurnEl) topTurnEl.innerText = data.target_player;
+                }
+
+                if (promptEl && data.prompt) {
+                    promptEl.innerText = data.prompt;
+                }
+
+                if (ddBanner) {
+                    // Double Dare display checks player specific attributes
+                    ddBanner.style.display = (data.truth_streak >= 3) ? 'block' : 'none';
+                }
+
+                // Synchronize visual metrics meters
+                if (truthBar && data.truths_remaining !== undefined) {
+                    truthBar.style.width = `calc(${data.truths_remaining} * 20%)`;
+                }
+                if (dareBar && data.dares_remaining !== undefined) {
+                    dareBar.style.width = `calc(${data.dares_remaining} * 20%)`;
+                }
+
+                // 2. DYNAMIC INPUT DISPATCH INTERFACE PANEL GENERATION
+                // Evaluates if the client viewing the browser page has stepped into the hot seat live
+                const controlZone = document.getElementById('controls-placement-zone');
+                if (controlZone) {
+                    if (data.target_player === current_user_session_name) {
+                        // Only generate the interactable panel buttons if they don't exist yet
+                        if (!document.getElementById('btn-truth') && !document.getElementById('btn-dare')) {
+                            const truthDisabled = (data.truth_streak >= 3 || data.truths_remaining <= 0) ? 'disabled' : '';
+                            const dareDisabled = (data.dares_remaining <= 0) ? 'disabled' : '';
+
+                            controlZone.innerHTML = `
+                                <div class="choice-group">
+                                    <button id="btn-truth" class="td-btn btn-truth" onclick="sendChoice('pick_truth')" ${truthDisabled}>TRUTH</button>
+                                    <button id="btn-dare" class="td-btn btn-dare" onclick="sendChoice('pick_dare')" ${dareDisabled}>DARE</button>
+                                </div>
+                            `;
+                        } else {
+                            // If buttons are already present, update disabled states dynamically without wiping elements
+                            const tBtn = document.getElementById('btn-truth');
+                            const dBtn = document.getElementById('btn-dare');
+                            if (tBtn) tBtn.disabled = (data.truth_streak >= 3 || data.truths_remaining <= 0);
+                            if (dBtn) dBtn.disabled = (data.dares_remaining <= 0);
+                        }
+                    } else {
+                        // Wipe controls instantly if the person left the hot seat
+                        controlZone.innerHTML = '';
+                    }
+                }
+
+            } catch (err) {
+                console.error("Polled transaction loop failure: ", err);
+            }
+        }
+
+        // 3. FIXED METHOD COMPATIBILITY MODIFIERS
+        // Changes parameter mapping payload key to 'action' to fit 'truth_dare_game' request logic directly
+        async function sendChoice(actionName) {
+            const fd = new FormData();
+            fd.append('action', actionName);
+            fd.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+            try {
+                await fetch("{% url 'room_session' room.room_code %}", { method: 'POST', body: fd });
+                await syncStatus();
+            } catch(e) {
+                console.error("Choice post exception: ", e);
+            }
+        }
+
+        async function triggerSpin() {
+            const fd = new FormData();
+            fd.append('action', 'next_player');
+            fd.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+            const targetPlayerEl = document.getElementById('target-player');
+            if (targetPlayerEl) targetPlayerEl.classList.add('spin-anim');
+
+            try {
+                await fetch("{% url 'room_session' room.room_code %}", { method: 'POST', body: fd });
+                await syncStatus();
+            } catch(e) {
+                console.error("Spin rotation request exception: ", e);
+            }
+        }
+
+        // Initialize engine sequence tracking instantly on arrival
+        syncStatus();
+        setInterval(syncStatus, 2000);
+    </script>
+</body>
+</html>
