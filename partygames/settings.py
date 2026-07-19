@@ -70,7 +70,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'partygames.wsgi.application'
 
-
+# Add your specific Render domain to the list
+ALLOWED_HOSTS = ['icebreaker-604q.onrender.com', '127.0.0.1', 'localhost']
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
