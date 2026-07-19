@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -15,6 +15,9 @@
             --text: #f8fafc;
             --danger: #ef4444;
             --gold: #fbbf24;
+            /* WhatsApp Style Colors */
+            --msg-sent: #1e3a8a;
+            --msg-received: #1e293b;
         }
 
         * { box-sizing: border-box; }
@@ -49,6 +52,30 @@
         }
         .vote-btn:hover { border-color: var(--accent-light); transform: translateY(-2px); background: rgba(255,255,255,0.08); }
         .vote-btn.voted { border-color: var(--accent); background: rgba(37, 99, 235, 0.2); }
+
+        /* --- WHATSAPP BOX CONTAINERS --- */
+        .chat-container { display: flex; flex-direction: column; gap: 10px; padding: 5px; }
+        .msg-row { display: flex; width: 100%; }
+        .msg-row.sent { justify-content: flex-end; }
+        .msg-row.received { justify-content: flex-start; }
+
+        .msg-box {
+            max-width: 75%; padding: 10px 14px; border-radius: 16px;
+            position: relative; font-size: 0.9rem; line-height: 1.4;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .msg-row.sent .msg-box {
+            background: var(--msg-sent); border-top-right-radius: 4px;
+            border: 1px solid rgba(56, 189, 248, 0.2);
+        }
+        .msg-row.received .msg-box {
+            background: var(--msg-received); border-top-left-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .msg-user { font-size: 0.75rem; font-weight: 800; margin-bottom: 3px; display: block; }
+        .msg-row.sent .msg-user { color: var(--accent-light); text-align: right; }
+        .msg-row.received .msg-user { color: var(--gold); }
 
         /* --- OVERLAYS --- */
         .full-overlay {
@@ -133,7 +160,7 @@
         <!-- CHAT -->
         <aside class="panel sidebar-chat">
             <div style="font-family:'Bungee'; color:var(--accent-light); margin-bottom: 10px; font-size: 0.8rem;">CHAT</div>
-            <div id="chat-messages" class="scroll-area" style="font-size: 0.9rem;"></div>
+            <div id="chat-messages" class="scroll-area chat-container"></div>
             <div style="display:flex; gap:8px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 12px;">
                 <input type="text" id="chatInput" style="flex:1; background:transparent; border:none; color:white; padding:8px;" placeholder="Type here..." onkeydown="if(event.key==='Enter') sendMessage()">
                 <button onclick="sendMessage()" style="background:var(--accent); border:none; color:white; padding:0 20px; border-radius:8px; cursor:pointer; font-weight:bold;">SEND</button>
@@ -143,10 +170,25 @@
 
     <script>
         // --- CONFIG & STATE ---
+        const CURRENT_USER = "{{ request.user.username }}";
         const IS_HOST = "{{ is_host }}" === "True";
         const ROOM_CODE = "{{ room.room_code }}";
         const RESULTS_URL = "/room/" + ROOM_CODE + "/results/";
         let lastCelebratedRound = "";
+
+        // --- HARD WIPE INTERFACE STATE ---
+        function clearAllSessionUI() {
+            // 1. Wipe cumulative wins dashboard
+            document.getElementById('scoreboard-list').innerHTML = '';
+
+            // 2. Clear current round vote badges underneath player boxes
+            document.querySelectorAll('[id^="vcount-"]').forEach(element => {
+                element.innerText = "0 votes";
+            });
+
+            // 3. Remove highlight marks on selected buttons
+            document.querySelectorAll('.vote-btn').forEach(btn => btn.classList.remove('voted'));
+        }
 
         // --- CORE ACTIONS ---
         async function sendAction(action, extraData = {}) {
@@ -162,17 +204,32 @@
         }
 
         async function castVote(target) {
-            // Visual feedback
             document.querySelectorAll('.vote-btn').forEach(b => b.classList.remove('voted'));
             document.getElementById('btn-' + target).classList.add('voted');
             await sendAction('cast_vote', { 'target': target });
         }
 
-        function handleExit() {
+        // --- EXIT LOGIC WITH TOTAL FLUSH ---
+        async function handleExit() {
             if (IS_HOST) {
-                if (confirm("End the game and view final results?")) window.location.href = "{% url 'end_game' room.room_code %}";
+                if (confirm("End the game and view final results?")) {
+                    clearAllSessionUI();
+
+                    const fd = new FormData();
+                    fd.append('action', 'end_game');
+                    fd.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+                    try {
+                        await fetch(window.location.href, { method: 'POST', body: fd });
+                    } catch (e) {
+                        console.error("Session termination error:", e);
+                    }
+                    window.location.href = RESULTS_URL;
+                }
             } else {
-                if (confirm("Leave current game?")) window.location.href = "{% url 'dashboard' %}";
+                if (confirm("Leave current game?")) {
+                    window.location.href = "{% url 'dashboard' %}";
+                }
             }
         }
 
@@ -180,19 +237,19 @@
         async function syncGame() {
             try {
                 const res = await fetch("{% url 'get_room_status' room.room_code %}");
-
                 if (res.status === 404) {
                     if (!IS_HOST) {
+                        clearAllSessionUI();
                         showGameOver("HOST LEFT", "The session has ended. Returning to dashboard...");
                         setTimeout(() => window.location.href = "{% url 'dashboard' %}", 3000);
                     }
                     return;
                 }
-
                 const data = await res.json();
 
-                // 1. Check for Game Completion
                 if (data.status === 'FINISHED' || data.is_finished === 'YES') {
+                    clearAllSessionUI();
+
                     if (!IS_HOST) {
                         showGameOver("GAME OVER", "The host ended the game. Viewing final results...");
                         setTimeout(() => window.location.href = RESULTS_URL, 3000);
@@ -202,22 +259,18 @@
                     return;
                 }
 
-                // 2. Check for Round Winner Animation
                 if (data.last_winner && data.round_id !== lastCelebratedRound) {
                     triggerWinnerAnim(data.last_winner);
                     lastCelebratedRound = data.round_id;
                 }
 
-                // 3. Update UI Elements
                 document.getElementById('prompt-display').innerText = data.prompt;
 
-                // Update Vote Counts
                 for (let [user, count] of Object.entries(data.scores || {})) {
                     const el = document.getElementById('vcount-' + user);
                     if (el) el.innerText = count + (count === 1 ? " vote" : " votes");
                 }
 
-                // Update Leaderboard
                 if (data.total_scores) {
                     const sorted = Object.entries(data.total_scores).sort((a,b) => b[1]-a[1]);
                     document.getElementById('scoreboard-list').innerHTML = sorted.map(([u, s]) => `
@@ -228,12 +281,44 @@
                     `).join('');
                 }
 
-                // Reset selection if new round
                 if (data.has_voted === false) {
                     document.querySelectorAll('.vote-btn').forEach(b => b.classList.remove('voted'));
                 }
 
+                await syncChat();
+
             } catch (e) { console.error("Sync Failure:", e); }
+        }
+
+        // --- CHAT RENDER LOOP ---
+        async function syncChat() {
+            try {
+                const chatRes = await fetch("{% url 'get_messages' room.room_code %}");
+                const chatData = await chatRes.json();
+
+                if (chatData.messages) {
+                    const chatBox = document.getElementById('chat-messages');
+                    const wasScrolled = chatBox.scrollHeight - chatBox.clientHeight <= chatBox.scrollTop + 60;
+
+                    chatBox.innerHTML = chatData.messages.map(msg => {
+                        const isMe = msg.user === CURRENT_USER;
+                        const sideClass = isMe ? 'sent' : 'received';
+
+                        return `
+                            <div class="msg-row ${sideClass}">
+                                <div class="msg-box">
+                                    <span class="msg-user">${isMe ? 'You' : msg.user}</span>
+                                    <span>${escapeHTML(msg.content)}</span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+
+                    if (wasScrolled) {
+                        chatBox.scrollTop = chatBox.scrollHeight;
+                    }
+                }
+            } catch(err) { console.error("Chat sync error:", err); }
         }
 
         // --- UI HELPERS ---
@@ -245,7 +330,7 @@
         }
 
         function triggerWinnerAnim(name) {
-            if (!name || name === "None") return;
+            if (!name || name === "None" || name === "Nobody") return;
             const pop = document.getElementById('round-winner-popup');
             document.getElementById('winner-name-text').innerText = name;
             pop.style.display = 'block';
@@ -256,13 +341,23 @@
             const input = document.getElementById('chatInput');
             const val = input.value.trim();
             if (!val) return;
+
             const fd = new FormData();
             fd.append('content', val);
+            fd.append('is_sticker', 'false');
             fd.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
             input.value = '';
             try {
                 await fetch("{% url 'send_message' room.room_code %}", { method: 'POST', body: fd });
-            } catch (e) {}
+                syncChat();
+            } catch (e) { console.error("Chat Post Error:", e); }
+        }
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, tag => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+            }[tag] || tag));
         }
 
         // --- INITIALIZE ---

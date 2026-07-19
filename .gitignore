@@ -1,4 +1,17 @@
+# Environment variables / Secret keys
 .env
-__pycache__/
-*.db
+
+# Virtual environments (Python)
 venv/
+.venv/
+env/
+
+# External packages (Node/JavaScript)
+node_modules/
+
+# Local Databases
+*.sqlite3
+
+# OS generated files
+.DS_Store
+Thump.db

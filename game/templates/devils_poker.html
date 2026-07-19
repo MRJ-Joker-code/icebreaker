@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DEVIL'S POKER</title>
+    <link rel="icon" href="data:,">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bungee&family=Inter:wght@400;700;900&display=swap');
+
+        :root {
+            --poker-bg: #1c050a;
+            --poker-panel: #3f0712;
+            --poker-accent: #dc2626;
+            --poker-gold: #fbbf24;
+            --card-red: #ef4444;
+            --card-black: #111827;
+        }
+
+        body {
+            margin: 0; background: var(--poker-bg); color: white;
+            font-family: 'Inter', sans-serif; display: flex;
+            flex-direction: column; justify-content: flex-start;
+            align-items: center; min-height: 100vh;
+            padding: 10px 0; box-sizing: border-box;
+        }
+
+        .main-layout-wrapper {
+            display: flex;
+            flex-direction: column;
+            width: 95%;
+            max-width: 1300px;
+            gap: 20px;
+            min-height: 100vh;
+        }
+
+        .chat-sidebar {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: rgba(63, 7, 18, 0.6);
+            border: 3px solid var(--poker-accent);
+            border-radius: 20px;
+            box-shadow: 0 0 40px rgba(220, 38, 38, 0.15);
+            overflow: hidden;
+            min-height: 350px;
+            max-height: 500px;
+        }
+
+        .chat-header {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 12px;
+            font-family: 'Bungee', sans-serif;
+            font-size: 0.9rem;
+            color: var(--poker-gold);
+            text-align: center;
+            border-bottom: 2px solid var(--poker-accent);
+            letter-spacing: 1px;
+        }
+
+        .chat-messages-box {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .chat-message-row {
+            padding: 8px 12px;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            border-left: 3px solid var(--poker-accent);
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .chat-footer {
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.4);
+            border-top: 2px solid var(--poker-accent);
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: #111;
+            color: #fff;
+            outline: none;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+        }
+
+        .chat-input:focus {
+            border-color: var(--poker-gold);
+        }
+
+        .btn-send {
+            padding: 10px 14px;
+            background: linear-gradient(135deg, var(--poker-gold), #d97706);
+            border: none;
+            color: black;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Bungee', sans-serif;
+            font-size: 0.75rem;
+        }
+
+        .btn-mic {
+            padding: 0;
+            background: #222;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1em;
+            transition: background 0.2s, transform 0.1s;
+            flex-shrink: 0;
+        }
+
+        .game-container {
+            flex: 2;
+            background: rgba(63, 7, 18, 0.4);
+            border: 3px solid var(--poker-accent);
+            border-radius: 20px;
+            padding: 15px;
+            box-shadow: 0 0 60px rgba(220, 38, 38, 0.25);
+            text-align: center;
+            position: relative;
+        }
+
+        .game-header-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        h1.title {
+            font-family: 'Bungee', sans-serif;
+            font-size: 1.6rem;
+            color: var(--poker-accent);
+            text-shadow: 0 0 15px rgba(220, 38, 38, 0.7);
+            margin: 0;
+            letter-spacing: 1px;
+        }
+
+        .scoreboard-widget {
+            display: flex;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid var(--poker-gold);
+            border-radius: 12px;
+            padding: 6px 14px;
+            font-family: 'Bungee', sans-serif;
+            font-size: 0.8rem;
+            gap: 12px;
+            box-shadow: 0 0 15px rgba(251, 191, 36, 0.15);
+        }
+
+        .score-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .score-val {
+            color: var(--poker-gold);
+            font-size: 1rem;
+            margin-top: 2px;
+        }
+
+        .turn-banner {
+            font-family: 'Bungee', sans-serif;
+            background: #ffe4e6;
+            color: #9f1239;
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            display: inline-block;
+            margin-bottom: 20px;
+            box-shadow: 0 0 20px rgba(255, 228, 230, 0.3);
+            text-transform: uppercase;
+            width: 90%;
+            box-sizing: border-box;
+        }
+
+        .opponent-section, .my-section {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 16px;
+            padding: 12px;
+            margin: 15px 0;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+        }
+
+        .section-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .section-label {
+            font-family: 'Bungee', sans-serif;
+            font-size: 0.75rem;
+            color: var(--poker-gold);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 0;
+            text-align: left;
+        }
+
+        .btn-shuffle {
+            background: #222;
+            border: 1px solid var(--poker-gold);
+            color: var(--poker-gold);
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Bungee', sans-serif;
+            font-size: 0.7rem;
+            transition: all 0.2s;
+        }
+
+        .btn-shuffle:hover:not(:disabled) {
+            background: var(--poker-gold);
+            color: black;
+        }
+
+        .btn-shuffle:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            border-color: #444;
+            color: #444;
+        }
+
+        .cards-row {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            perspective: 1000px;
+            min-height: 135px;
+        }
+
+        /* FLUID RESPONSIVE CARD SLOTS */
+        .card-slot {
+            width: 85px;
+            height: 128px;
+            background: #111;
+            border: 2px solid #333;
+            border-radius: 10px;
+            position: relative;
+            cursor: default;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease, opacity 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-weight: 900;
+            user-select: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            transform-style: preserve-3d;
+        }
+
+        .card-slot.switching-places {
+            transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1) !important;
+            z-index: 50;
+        }
+
+        .card-slot.opponent-active {
+            border: 2px dashed var(--poker-accent);
+            background: radial-gradient(circle, #450a0a 0%, #1e1b4b 100%);
+            cursor: pointer;
+        }
+        .card-slot.opponent-active:hover:not(.disabled-click) {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 0 15px rgba(220, 38, 38, 0.8);
+            border-color: var(--poker-gold);
+        }
+
+        .card-slot.disabled-click {
+            cursor: not-allowed !important;
+            opacity: 0.6;
+        }
+
+        .card-slot.eliminated {
+            opacity: 0.25;
+            filter: grayscale(1);
+            border: 2px solid #000 !important;
+            background: #09090b !important;
+            box-shadow: none !important;
+            transform: none !important;
+            cursor: not-allowed !important;
+        }
+
+        .card-red {
+            background: linear-gradient(135deg, #ef4444, #991b1b) !important;
+            border-color: #fca5a5 !important;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .card-black {
+            background: linear-gradient(135deg, #374151, #111827) !important;
+            border-color: #9ca3af !important;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+            box-shadow: 0 0 15px rgba(251, 191, 36, 0.4) !important;
+        }
+
+        .card-symbol {
+            font-size: 1.6rem;
+            margin-bottom: 2px;
+        }
+        .card-tag {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            font-family: 'Bungee', sans-serif;
+            letter-spacing: 0.5px;
+        }
+
+        .grand-winner-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(28, 5, 10, 0.95);
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(12px);
+            border: 4px solid var(--poker-accent);
+            box-sizing: border-box;
+            padding: 15px;
+        }
+
+        .winner-banner-box {
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .winner-title {
+            font-family: 'Bungee', sans-serif;
+            font-size: 2.2rem;
+            color: var(--poker-gold);
+            text-shadow: 0 0 20px rgba(251, 191, 36, 0.8);
+            margin: 0 0 10px 0;
+        }
+
+        .winner-subtitle {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 25px;
+        }
+
+        .btn-action {
+            background: linear-gradient(135deg, var(--poker-gold), #d97706);
+            color: black;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-family: 'Bungee', sans-serif;
+            font-size: 0.85rem;
+            cursor: pointer;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.3);
+            transition: all 0.1s;
+        }
+        .btn-action:active {
+            transform: translateY(2px);
+            box-shadow: none;
+        }
+        .btn-action:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .penalty-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(8px);
+            padding: 15px;
+            box-sizing: border-box;
+        }
+
+        .penalty-card {
+            background: var(--poker-panel);
+            border: 3px solid var(--poker-gold);
+            border-radius: 20px;
+            padding: 20px;
+            max-width: 450px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(251, 191, 36, 0.4);
+        }
+
+        .penalty-title {
+            font-family: 'Bungee', sans-serif;
+            font-size: 1.2rem;
+            color: var(--poker-gold);
+            margin-top: 0;
+        }
+
+        .penalty-input-container {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+
+        .win-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 0;
+        }
+
+        .single-card-viewport {
+            position: relative;
+            height: 170px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1200px;
+        }
+
+        .slim-penalty-card {
+            position: relative;
+            width: 110px;
+            height: 160px;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.6);
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .slim-penalty-card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face-side {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            box-sizing: border-box;
+            font-weight: 700;
+        }
+
+        .card-face-side.back {
+            background: linear-gradient(135deg, #450a0a, #1a0307);
+            border: 2px solid var(--poker-gold);
+            color: var(--poker-gold);
+        }
+
+        .card-face-side.front {
+            background: linear-gradient(135deg, #7f1d1d, #b91c1c);
+            border: 2px solid #fecdd3;
+            color: white;
+            transform: rotateY(180deg);
+        }
+
+        /* SCREEN MEDIA queries FOR MEDIUM AND LARGE VIEWPORTS */
+        @media (min-width: 768px) {
+            h1.title { font-size: 2.2rem; }
+            .chat-header { font-size: 0.95rem; }
+            .chat-message-row { font-size: 0.9rem; }
+            .scoreboard-widget { font-size: 0.9rem; padding: 8px 16px; gap: 15px; }
+            .score-val { font-size: 1.2rem; }
+            .turn-banner { font-size: 0.95rem; padding: 10px 20px; }
+            .section-label { font-size: 0.85rem; }
+            .btn-shuffle { font-size: 0.75rem; padding: 6px 12px; }
+            .cards-row { gap: 15px; min-height: 175px; }
+            .card-slot { width: 110px; height: 165px; border-width: 3px; border-radius: 14px; }
+            .card-symbol { font-size: 2.2rem; margin-bottom: 5px; }
+            .card-tag { font-size: 0.75rem; }
+            .winner-title { font-size: 3.5rem; }
+            .winner-subtitle { font-size: 1.4rem; }
+            .btn-action { padding: 15px 30px; font-size: 0.95rem; border-radius: 15px; }
+            .penalty-card { padding: 40px; }
+            .penalty-title { font-size: 1.5rem; }
+            .single-card-viewport { height: 220px; }
+            .slim-penalty-card { width: 130px; height: 185px; }
+        }
+
+        @media (min-width: 992px) {
+            body { padding: 20px 0; }
+            .main-layout-wrapper { flex-direction: row; height: 85vh; min-height: 650px; }
+            .chat-sidebar { flex: 0 0 350px; max-height: none; min-height: 0; }
+            .game-container { padding: 30px; overflow-y: auto; }
+            .game-header-area { flex-direction: row; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="grand-winner-banner" class="grand-winner-overlay">
+        <div class="winner-banner-box">
+            <div class="winner-title">ROUND OVER!</div>
+            <p id="winner-banner-text" class="winner-subtitle">Calculating final scores...</p>
+            <div id="ready-status-notification" style="margin: 15px 0; font-family: 'Bungee'; color: var(--poker-gold); font-size: 0.9rem; min-height: 24px;"></div>
+            <button id="next-round-btn" class="btn-action">Ready For Next Round</button>
+        </div>
+    </div>
+
+    <div class="main-layout-wrapper">
+        <!-- LEFT COLUMN: CHAT PANEL -->
+        <div class="chat-sidebar">
+            <div class="chat-header">Lobby Discussion & Truths</div>
+            <div id="poker-chat-box" class="chat-messages-box"></div>
+            <div class="chat-footer">
+                <input type="text" id="text-input" class="chat-input" placeholder="Type answer or chat...">
+                <button id="send-btn" class="btn-send">Send</button>
+                <button id="mic-btn" class="btn-mic" title="Click to record audio voice note">🎤</button>
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN: GAMEPLAY PANEL -->
+        <div class="game-container">
+            <div class="game-header-area">
+                <h1 class="title">😈 DEVIL'S POKER 😈</h1>
+                <div class="scoreboard-widget">
+                    <div class="score-item">
+                        <span>YOU</span>
+                        <div id="my-score-lbl" class="score-val">0</div>
+                    </div>
+                    <div style="color: rgba(255,255,255,0.3); font-size: 1.2rem;">:</div>
+                    <div class="score-item">
+                        <span id="opp-score-name">THEM</span>
+                        <div id="opponent-score-lbl" class="score-val">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="turn-display-banner" class="turn-banner">Syncing session state...</div>
+
+            <!-- OPPONENT'S HAND -->
+            <div class="opponent-section">
+                <div class="section-header-row">
+                    <div class="section-label">Opponent: <span id="opponent-name-label">{{ opponent.username }}</span>'s Hand</div>
+                </div>
+                <div id="opponent-cards-container" class="cards-row"></div>
+            </div>
+
+            <p id="hint-text" style="opacity: 0.6; font-size: 0.85rem; min-height: 20px; margin: 15px 0; color: var(--poker-gold);">
+                Waiting for game update...
+            </p>
+
+            <!-- MY PRIVATE HAND -->
+            <div class="my-section">
+                <div class="section-header-row">
+                    <div class="section-label">Your Private Hand</div>
+                    <button id="shuffle-deck-btn" class="btn-shuffle" onclick="shuffleMyHand()">🔀 Shuffle Deck</button>
+                </div>
+                <div id="my-cards-container" class="cards-row"></div>
+            </div>
+
+            <!-- GAME OVER VIEW -->
+            <div id="game-over-view" class="win-screen">
+                <div class="winner-announcement" style="font-family: 'Bungee'; font-size: 2.2rem; color: var(--poker-gold);">🏆 GAME OVER</div>
+                <p id="victory-text" style="font-size: 1.1rem; font-weight: bold; margin-bottom: 20px;"></p>
+                <button class="btn-action" style="background: linear-gradient(135deg, #4b5563, #1f2937); color: white;" onclick="returnToLobby()">Return to Room Lobby</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ONE-CARD PENALTY MODAL DIALOG -->
+    <div id="penalty-modal" class="penalty-overlay">
+        <div class="penalty-card">
+            <h3 class="penalty-title">⚠️ GUESS INCOMPLETE!</h3>
+            <p id="penalty-instruction-lbl" style="opacity: 0.7; font-size: 0.75rem; text-transform: uppercase; font-family: 'Bungee'; margin: 0 0 10px 0;">
+                Click the card to reveal your truth penalty
+            </p>
+
+            <div class="single-card-viewport">
+                <div id="penalty-card-element" class="slim-penalty-card" onclick="flipPenaltyCard()">
+                    <div class="card-face-side back">
+                        <span style="font-size: 1.6rem; margin-bottom: 5px;">🔒</span>
+                        <span style="font-family:'Bungee'; font-size:0.65rem; text-align:center;">PENALTY TRUTH</span>
+                        <span style="font-size:0.55rem; opacity:0.5; margin-top:6px;">(Click to Flip)</span>
+                    </div>
+                    <div class="card-face-side front">
+                        <span style="font-size:0.65rem; text-transform:uppercase; color:var(--poker-gold); font-family:'Bungee'; margin-bottom:6px;">Your Question</span>
+                        <p id="penalty-question-text" style="margin:0; font-size:0.75rem; text-align:center; line-height:1.3; font-weight:700;">"..."</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="penalty-input-container">
+                <input type="text" id="penalty-text-input" class="chat-input" placeholder="Flip the card first..." disabled>
+                <button id="penalty-mic-btn" class="btn-mic" title="Click to record audio answer" disabled>🎤</button>
+            </div>
+
+            <button id="penalty-submit-btn" class="btn-action" onclick="submitPenaltyResolution()" disabled>
+                Submit Answer & Continue
+            </button>
+        </div>
+    </div>
+
+    <input type="hidden" id="csrf-token" value="{{ csrf_token }}">
+
+    <script>
+        const roomCode = "{{ room.room_code }}";
+        const opponentName = "{{ opponent.username }}";
+        const chatBox = document.getElementById('poker-chat-box');
+
+        let isMyTurnToGuess = false;
+        let isWaitingForServer = false;
+        let localPlayerReady = false;
+        let isCardFlipped = false;
+        let currentPenaltyQuestion = "";
+
+        let structuredMyHand = [];
+        let currentHandFingerprint = "";
+
+        if (opponentName) {
+            document.getElementById("opp-score-name").innerText = opponentName.substring(0, 8).toUpperCase();
+        }
+
+        // --- CHAT PIPELINE ---
+        function pollPokerMessages() {
+            fetch(`/room/${roomCode}/messages/`)
+                .then(res => res.json())
+                .then(data => {
+                    if (chatBox.children.length === data.messages.length) return;
+                    chatBox.innerHTML = '';
+                    data.messages.forEach(msg => {
+                        const row = document.createElement('div');
+                        row.className = 'chat-message-row';
+                        let msgContent = `<strong style="color: var(--poker-gold);">${msg.user}:</strong> `;
+                        if (msg.content && msg.content.trim().startsWith('data:audio/')) {
+                            msgContent += `
+                                <div style="margin-top: 6px;">
+                                    <audio controls src="${msg.content.trim()}" style="max-width: 100%; height: 32px; display: block;"></audio>
+                                </div>`;
+                        } else {
+                            msgContent += `<span style="margin-left: 4px;">${msg.content}</span>`;
+                        }
+                        row.innerHTML = msgContent;
+                        chatBox.appendChild(row);
+                    });
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                }).catch(err => console.error(err));
+        }
+
+        function submitPayload(contentValue, callback = null) {
+            const formData = new FormData();
+            formData.append('content', contentValue);
+            formData.append('csrfmiddlewaretoken', document.getElementById("csrf-token").value);
+            fetch(`/room/${roomCode}/messages/send2/`, { method: "POST", body: formData })
+                .then(res => {
+                    if (callback) callback();
+                    pollPokerMessages();
+                });
+        }
+
+        document.getElementById('send-btn').onclick = sendText;
+        document.getElementById('text-input').onkeypress = (e) => { if (e.key === 'Enter') sendText(); };
+
+        function sendText() {
+            const input = document.getElementById('text-input');
+            if (!input.value.trim()) return;
+            submitPayload(input.value, () => { input.value = ''; });
+        }
+
+        // --- AUDIO ENGINE ---
+        function setupAudioRecorder(buttonElement, base64Callback) {
+            let mediaRecorder;
+            let audioChunks = [];
+            let isRecording = false;
+            let localStream = null;
+
+            buttonElement.onclick = async function(e) {
+                e.preventDefault();
+                if (isRecording) {
+                    if (mediaRecorder && mediaRecorder.state === "recording") mediaRecorder.stop();
+                    return;
+                }
+                audioChunks = [];
+                buttonElement.style.background = "var(--poker-accent)";
+                buttonElement.innerText = "🛑";
+                isRecording = true;
+
+                try {
+                    localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    let options = { mimeType: 'audio/webm' };
+                    if (!MediaRecorder.isTypeSupported('audio/webm')) options = { mimeType: 'audio/mp4' };
+                    mediaRecorder = new MediaRecorder(localStream, options);
+                    mediaRecorder.ondataavailable = ev => { if (ev.data.size > 0) audioChunks.push(ev.data); };
+                    mediaRecorder.onstop = () => {
+                        buttonElement.style.background = "#222";
+                        buttonElement.innerText = "🎤";
+                        isRecording = false;
+                        if (audioChunks.length === 0) return;
+                        const audioBlob = new Blob(audioChunks, { type: options.mimeType });
+                        const reader = new FileReader();
+                        reader.readAsDataURL(audioBlob);
+                        reader.onloadend = () => base64Callback(reader.result);
+                        if (localStream) localStream.getTracks().forEach(track => track.stop());
+                    };
+                    mediaRecorder.start();
+                } catch (err) {
+                    buttonElement.style.background = "#222";
+                    buttonElement.innerText = "🎤";
+                    isRecording = false;
+                }
+            };
+        }
+
+        setupAudioRecorder(document.getElementById('mic-btn'), (base64Data) => { submitPayload(base64Data); });
+        setupAudioRecorder(document.getElementById('penalty-mic-btn'), (base64Data) => { executePenaltyResolution(base64Data); });
+
+        // --- SWITCH ANIMATION SHUFFLE ENGINE ---
+        function shuffleMyHand() {
+            if (structuredMyHand.length <= 1) return;
+
+            const shuffleBtn = document.getElementById("shuffle-deck-btn");
+            shuffleBtn.disabled = true;
+
+            const cardElements = Array.from(document.querySelectorAll("#my-cards-container .card-slot"));
+            const currentCoordinates = cardElements.map(el => el.getBoundingClientRect());
+
+            const oldIndices = structuredMyHand.map((_, i) => i);
+            for (let i = structuredMyHand.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [structuredMyHand[i], structuredMyHand[j]] = [structuredMyHand[j], structuredMyHand[i]];
+                [oldIndices[i], oldIndices[j]] = [oldIndices[j], oldIndices[i]];
+            }
+
+            cardElements.forEach((el, index) => {
+                const targetSlotIndex = oldIndices.indexOf(index);
+                const originalRect = currentCoordinates[index];
+                const targetRect = currentCoordinates[targetSlotIndex];
+
+                const deltaX = targetRect.left - originalRect.left;
+                const deltaY = targetRect.top - originalRect.top;
+
+                el.classList.add("switching-places");
+
+                const verticalArc = deltaY - (Math.abs(deltaX) > 10 ? 15 : 0);
+                const rotationalTilt = deltaX > 0 ? 5 : -5;
+                el.style.transform = `translate(${deltaX}px, ${verticalArc}px) scale(1.05) rotate(${rotationalTilt}deg)`;
+            });
+
+            setTimeout(() => {
+                renderMyShuffledHand();
+                shuffleBtn.disabled = false;
+            }, 500);
+        }
+
+        function renderMyShuffledHand() {
+            const myContainer = document.getElementById("my-cards-container");
+            let myHTML = "";
+            structuredMyHand.forEach(item => {
+                const stateClass = item.isActive ? "" : "eliminated";
+                if (item.card === "B") {
+                    myHTML += `<div class="card-slot card-black ${stateClass}"><span class="card-symbol">💀</span><span class="card-tag">Devil</span></div>`;
+                } else {
+                    myHTML += `<div class="card-slot card-red ${stateClass}"><span class="card-symbol">♥️</span><span class="card-tag">Red Card</span></div>`;
+                }
+            });
+            myContainer.innerHTML = myHTML;
+        }
+
+        // --- PENALTY CHECKPOINT ENGINE ---
+        function flipPenaltyCard() {
+            if (isCardFlipped) return;
+            isCardFlipped = true;
+
+            document.getElementById("penalty-card-element").classList.add("flipped");
+            document.getElementById("penalty-instruction-lbl").innerText = "Answer the question to continue the round";
+
+            const textInput = document.getElementById("penalty-text-input");
+            textInput.disabled = false;
+            textInput.placeholder = "Type your truth answer here...";
+            textInput.focus();
+
+            document.getElementById("penalty-mic-btn").disabled = false;
+            document.getElementById("penalty-submit-btn").disabled = false;
+        }
+
+        function resetPenaltyCardUI(questionText) {
+            isCardFlipped = false;
+            currentPenaltyQuestion = questionText;
+
+            document.getElementById("penalty-card-element").classList.remove("flipped");
+            document.getElementById("penalty-question-text").innerText = `"${questionText}"`;
+            document.getElementById("penalty-instruction-lbl").innerText = "Click the card to reveal your truth penalty";
+
+            const textInput = document.getElementById("penalty-text-input");
+            textInput.disabled = true;
+            textInput.value = "";
+            textInput.placeholder = "Flip the card first...";
+
+            document.getElementById("penalty-mic-btn").disabled = true;
+            document.getElementById("penalty-submit-btn").disabled = true;
+        }
+
+        // --- CORE GAME ACTIONS PIPELINE ---
+        function makeGuess(cardIndex) {
+            if (!isMyTurnToGuess || isWaitingForServer) return;
+            isWaitingForServer = true;
+
+            document.querySelectorAll(".card-slot.opponent-active").forEach(card => {
+                card.classList.add("disabled-click");
+            });
+
+            const formData = new FormData();
+            formData.append("action", "guess");
+            formData.append("index", cardIndex);
+
+            fetch(window.location.pathname, {
+                method: "POST",
+                headers: { "X-CSRFToken": document.getElementById("csrf-token").value, "X-Requested-With": "XMLHttpRequest" },
+                body: formData
+            }).then(() => {
+                isWaitingForServer = false;
+                syncGameState();
+            }).catch(() => {
+                isWaitingForServer = false;
+                syncGameState();
+            });
+        }
+
+        function submitPenaltyResolution() {
+            const input = document.getElementById("penalty-text-input");
+            if (!input.value.trim()) return;
+            executePenaltyResolution(input.value);
+        }
+
+        function executePenaltyResolution(answerText) {
+            const formData = new FormData();
+            formData.append("action", "resolve_penalty");
+            formData.append("answer", answerText);
+            fetch(window.location.pathname, {
+                method: "POST",
+                headers: { "X-CSRFToken": document.getElementById("csrf-token").value, "X-Requested-With": "XMLHttpRequest" },
+                body: formData
+            }).then(res => res.json()).then(() => {
+                syncGameState();
+            });
+        }
+
+        function advanceToNextRound() {
+            localPlayerReady = true;
+            document.getElementById("next-round-btn").disabled = true;
+            document.getElementById("ready-status-notification").innerText = "Waiting for opponent to get ready...";
+
+            const formData = new FormData();
+            formData.append("action", "next_round");
+            fetch(window.location.pathname, {
+                method: "POST",
+                headers: { "X-CSRFToken": document.getElementById("csrf-token").value, "X-Requested-With": "XMLHttpRequest" },
+                body: formData
+            });
+        }
+        document.getElementById("next-round-btn").onclick = advanceToNextRound;
+        function returnToLobby() { window.location.href = `/room/${roomCode}/`; }
+
+        // --- SYSTEM GAMELOOP STATE SYNC ENGINE ---
+        async function syncGameState() {
+            try {
+                const res = await fetch(window.location.pathname + "?format=json");
+                if (!res.ok) return;
+                const data = await res.json();
+
+                if (data.my_score !== undefined) {
+                    document.getElementById("my-score-lbl").innerText = data.my_score;
+                    document.getElementById("opponent-score-lbl").innerText = data.opponent_score;
+                }
+
+                if (data.winner) {
+                    const isMe = data.winner === "{{ request.user.username }}";
+                    document.getElementById("winner-banner-text").innerText = isMe
+                        ? `👑 YOU WON THE ROUND! You exposed ${opponentName}'s Devil card!`
+                        : `💀 ${opponentName} WON THE ROUND! Your Devil card was compromised!`;
+
+                    const alertDiv = document.getElementById("ready-status-notification");
+                    if (data.opponent_ready && !localPlayerReady) {
+                        alertDiv.innerText = `📢 ${opponentName} is ready for the next round!`;
+                    } else if (localPlayerReady && !data.opponent_ready) {
+                        alertDiv.innerText = "Waiting for opponent to get ready...";
+                    } else if (!localPlayerReady && !data.opponent_ready) {
+                        alertDiv.innerText = "";
+                    }
+
+                    document.getElementById("grand-winner-banner").style.display = "flex";
+                    return;
+                } else {
+                    document.getElementById("grand-winner-banner").style.display = "none";
+                    document.getElementById("next-round-btn").disabled = false;
+                    localPlayerReady = false;
+                }
+
+                if (data.stage === "FINISHED") {
+                    document.getElementById("turn-display-banner").style.display = "none";
+                    document.getElementById("hint-text").style.display = "none";
+                    document.querySelector(".opponent-section").style.display = "none";
+                    document.querySelector(".my-section").style.display = "none";
+                    document.getElementById("game-over-view").style.display = "flex";
+                    document.getElementById("victory-text").innerText = "The game session has ended.";
+                    return;
+                }
+
+                const banner = document.getElementById("turn-display-banner");
+                isMyTurnToGuess = data.is_my_turn;
+
+                if (data.stage === "PENALTY") {
+                    document.getElementById("shuffle-deck-btn").disabled = true;
+                    if (isMyTurnToGuess) {
+                        banner.innerText = "🚨 Truth Penalty Active!";
+
+                        let incomingQuestion = "Provide an honest answer.";
+                        if (Array.isArray(data.penalty_questions) && data.penalty_questions.length > 0) {
+                            incomingQuestion = data.penalty_questions[0];
+                        } else if (data.penalty_question) {
+                            incomingQuestion = data.penalty_question;
+                        }
+
+                        if (incomingQuestion !== currentPenaltyQuestion) {
+                            resetPenaltyCardUI(incomingQuestion);
+                        }
+
+                        document.getElementById("penalty-modal").style.display = "flex";
+                    } else {
+                        document.getElementById("penalty-modal").style.display = "none";
+                        banner.innerText = `🗣️ ${opponentName} is facing a Truth Penalty...`;
+                        document.getElementById("hint-text").innerText = `${opponentName} is answering their card!`;
+                    }
+                } else {
+                    const isShufflingNow = document.querySelector("#my-cards-container .switching-places") !== null;
+                    if (!isShufflingNow) {
+                        document.getElementById("shuffle-deck-btn").disabled = false;
+                    }
+
+                    document.getElementById("penalty-modal").style.display = "none";
+                    if (isMyTurnToGuess) {
+                        banner.innerText = "👉 Your Turn: Guess Opponent's Black Card!";
+                        banner.style.background = "var(--poker-gold)"; banner.style.color = "black";
+                        if (!isWaitingForServer) {
+                            document.getElementById("hint-text").innerText = "Click on one of your opponent's active cards above to guess!";
+                        }
+                    } else {
+                        banner.innerText = `⏳ Waiting for ${opponentName} to guess...`;
+                        banner.style.background = "#ffe4e6"; banner.style.color = "#9f1239";
+                        document.getElementById("hint-text").innerText = `${opponentName} is targeting one of your active cards!`;
+                    }
+                }
+
+                // Render opponent's hand layout
+                const opponentContainer = document.getElementById("opponent-cards-container");
+                let opponentHTML = "";
+                data.opponent_hand.forEach((cardVal, index) => {
+                    const isActive = data.opponent_active_indices.includes(index);
+                    if (isActive) {
+                        const activeClass = (isMyTurnToGuess && data.stage !== "PENALTY") ? "opponent-active" : "";
+                        const networkBlockClass = isWaitingForServer ? "disabled-click" : "";
+                        opponentHTML += `<div class="card-slot ${activeClass} ${networkBlockClass}" onclick="makeGuess(${index})"><span class="card-symbol">😈</span><span class="card-tag">Hidden</span></div>`;
+                    } else {
+                        opponentHTML += `<div class="card-slot eliminated card-red"><span class="card-symbol">♦️</span><span class="card-tag">Red Card</span></div>`;
+                    }
+                });
+                opponentContainer.innerHTML = opponentHTML;
+
+                // Sync private cards layout (bypass during local switch animation routines)
+                const isCurrentlyAnimatingShuffle = document.querySelector("#my-cards-container .switching-places") !== null;
+                if (!isCurrentlyAnimatingShuffle) {
+                    const newFingerprint = data.my_hand.join("") + "-" + data.my_active_indices.join(",");
+                    if (newFingerprint !== currentHandFingerprint) {
+                        currentHandFingerprint = newFingerprint;
+                        structuredMyHand = data.my_hand.map((card, idx) => {
+                            return { card: card, originalIndex: idx, isActive: data.my_active_indices.includes(idx) };
+                        });
+                        renderMyShuffledHand();
+                    } else {
+                        let stateAltered = false;
+                        structuredMyHand.forEach(item => {
+                            const stillActive = data.my_active_indices.includes(item.originalIndex);
+                            if (item.isActive !== stillActive) { item.isActive = stillActive; stateAltered = true; }
+                        });
+                        if (stateAltered) renderMyShuffledHand();
+                    }
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        setInterval(syncGameState, 1500);
+        setInterval(pollPokerMessages, 2000);
+        syncGameState();
+        pollPokerMessages();
+    </script>
+</body>
+</html>

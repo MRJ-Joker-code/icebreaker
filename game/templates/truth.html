@@ -4,36 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TRUTH OR DARE</title>
+    <!-- Prevent favicon 404 logs -->
+    <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Bungee&family=Inter:wght@400;700;900&display=swap');
 
         :root {
-            --td-bg: #4c0519; /* Very deep crimson berry wine */
+            --td-bg: #4c0519; /* Deep crimson wine */
             --td-panel: #881337; /* Rich dark ruby red */
             --td-accent: #f43f5e; /* Vibrant pinkish red */
             --td-hotpink: #f472b6; /* High-visibility neon pink */
-            --truth-color: #10b981; /* Keeping green for safe-resource readability */
+            --truth-color: #10b981; /* Safe green */
             --dare-color: #f43f5e;
+            --yes-vote: #10b981;
+            --no-vote: #ef4444;
         }
 
         body {
             margin: 0; background: var(--td-bg); color: white;
             font-family: 'Inter', sans-serif; display: flex;
-            flex-direction: column; justify-content: center;
+            flex-direction: column; justify-content: flex-start;
             align-items: center; min-height: 100vh;
             overflow-x: hidden;
+            padding: 20px 0;
+            box-sizing: border-box;
         }
 
         /* --- TOP TURN DISPLAY BAR --- */
         .turn-header {
-            background: linear-gradient(135deg, #e11d48, #db2777); /* Deep Red to Hot Pink neon gradient */
+            background: linear-gradient(135deg, #e11d48, #db2777);
             padding: 12px 35px;
             border-radius: 50px;
             font-family: 'Bungee', sans-serif;
             font-size: 1.1rem;
             letter-spacing: 1px;
             box-shadow: 0 0 30px rgba(219, 39, 119, 0.4);
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             border: 2px solid var(--td-hotpink);
             text-transform: uppercase;
             text-shadow: 0 2px 4px rgba(0,0,0,0.3);
@@ -48,13 +54,148 @@
             to { box-shadow: 0 0 35px rgba(244, 114, 182, 0.7); }
         }
 
+        /* --- THREE-COLUMN GAME SCREEN CONTAINER --- */
+        .game-layout {
+            display: flex;
+            gap: 25px;
+            width: 95%;
+            max-width: 1350px;
+            margin: 0 auto;
+            align-items: stretch;
+        }
+
+        /* Center area */
+        .main-column {
+            flex: 1.4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Side Panels (Scoreboard Left & Chat Right) */
+        .side-panel {
+            flex: 1;
+            background: rgba(136, 19, 55, 0.4);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(244, 114, 182, 0.3);
+            border-radius: 30px;
+            padding: 25px;
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
         /* --- THE HOT SEAT CARD --- */
         .card {
-            background: var(--td-panel); width: 90%; max-width: 600px;
-            padding: 40px; border-radius: 40px; border: 4px solid var(--td-hotpink);
-            text-align: center; box-shadow: 0 0 80px rgba(244, 63, 94, 0.35);
-            position: relative; overflow: hidden;
+            background: var(--td-panel);
+            width: 100%;
+            padding: 40px;
+            border-radius: 40px;
+            border: 4px solid var(--td-hotpink);
+            text-align: center;
+            box-shadow: 0 0 80px rgba(244, 63, 94, 0.35);
+            position: relative;
+            overflow: hidden;
             box-sizing: border-box;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* --- LEADERBOARD & SCOREBOARD STYLE --- */
+        .board-title {
+            font-family: 'Bungee', sans-serif;
+            font-size: 1.2rem;
+            color: var(--td-hotpink);
+            border-bottom: 2px solid var(--td-hotpink);
+            padding-bottom: 10px;
+            margin-top: 0;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        .player-score-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            border-radius: 12px;
+            background: rgba(0,0,0,0.2);
+            margin-bottom: 8px;
+            font-weight: bold;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .score-badge {
+            color: var(--truth-color);
+            font-family: 'Bungee', sans-serif;
+        }
+
+        /* --- CHAT BOX STYLE --- */
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .chat-bubble {
+            padding: 12px 15px;
+            border-radius: 15px;
+            max-width: 85%;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+
+        .chat-me {
+            background: var(--td-accent);
+            align-self: flex-end;
+            color: white;
+            border-bottom-right-radius: 2px;
+        }
+
+        .chat-other {
+            background: rgba(255,255,255,0.1);
+            align-self: flex-start;
+            color: #ffe4e6;
+            border-bottom-left-radius: 2px;
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: rgba(0,0,0,0.4);
+            border: 2px solid var(--td-hotpink);
+            border-radius: 12px;
+            padding: 12px;
+            color: white;
+            outline: none;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .chat-send-btn {
+            background: var(--td-accent);
+            border: none;
+            border-radius: 12px;
+            padding: 0 20px;
+            color: white;
+            font-family: 'Bungee';
+            cursor: pointer;
         }
 
         /* --- SPIN ANIMATION --- */
@@ -65,18 +206,107 @@
             100% { transform: rotateX(360deg) scale(1); opacity: 1; }
         }
 
-        .player-name { font-family: 'Bungee'; font-size: 3.5rem; color: #fff; text-shadow: 0 0 20px rgba(244, 114, 182, 0.8); margin: 15px 0; }
-        .prompt-text { font-size: 1.6rem; min-height: 120px; font-weight: 700; display: flex; align-items: center; justify-content: center; line-height: 1.3; color: #ffe4e6; }
+        .player-name { font-family: 'Bungee'; font-size: 3rem; color: #fff; text-shadow: 0 0 20px rgba(244, 114, 182, 0.8); margin: 15px 0; }
+        .prompt-text { font-size: 1.5rem; min-height: 120px; font-weight: 700; display: flex; align-items: center; justify-content: center; line-height: 1.3; color: #ffe4e6; }
 
-        /* --- RESOURCE BARS --- */
-        .resource-container { display: flex; gap: 20px; justify-content: center; margin-bottom: 30px; }
-        .bar-wrapper { width: 120px; text-align: left; }
-        .bar-label { font-size: 0.7rem; font-family: 'Bungee'; margin-bottom: 5px; display: block; opacity: 0.8; color: var(--td-hotpink); }
+        /* --- RESOURCE BARS with Labels and Numbers --- */
+        .resource-container { display: flex; gap: 20px; justify-content: center; margin-bottom: 25px; }
+        .bar-wrapper { width: 140px; text-align: left; }
+
+        .bar-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .bar-label { font-size: 0.7rem; font-family: 'Bungee'; opacity: 0.8; color: var(--td-hotpink); }
+        .bar-number { font-size: 0.75rem; font-family: 'Bungee'; font-weight: bold; color: white; }
+
         .bar-outer { background: rgba(0,0,0,0.4); height: 12px; border-radius: 6px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
         .bar-inner { height: 100%; transition: width 0.5s ease; }
 
+        /* --- VOTE SYSTEM COMPONENT --- */
+        .vote-card {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 20px;
+            padding: 15px;
+            margin: 15px 0;
+            border: 1px solid var(--td-hotpink);
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            animation: slideUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .vote-title {
+            font-family: 'Bungee';
+            font-size: 0.9rem;
+            color: var(--td-hotpink);
+            letter-spacing: 1px;
+            margin: 0;
+        }
+
+        .vote-bar-container {
+            display: flex;
+            height: 25px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+            margin: 5px 0;
+        }
+
+        .vote-yes-bar {
+            background: var(--yes-vote);
+            height: 100%;
+            transition: width 0.4s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .vote-no-bar {
+            background: var(--no-vote);
+            height: 100%;
+            transition: width 0.4s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .vote-btn-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .vote-btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: 10px;
+            border: none;
+            font-family: 'Bungee';
+            color: white;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: transform 0.1s;
+        }
+        .vote-btn:active { transform: scale(0.95); }
+        .vote-btn-yes { background: var(--yes-vote); }
+        .vote-btn-no { background: var(--no-vote); }
+
         /* --- BUTTONS --- */
-        .choice-group { display: flex; gap: 15px; margin-top: 20px; }
+        .choice-group { display: flex; gap: 15px; margin-top: 10px; }
         .td-btn {
             flex: 1; padding: 20px; border-radius: 18px; border: none;
             font-family: 'Bungee'; cursor: pointer; transition: all 0.2s;
@@ -88,15 +318,59 @@
         .btn-truth { background: linear-gradient(135deg, #059669, var(--truth-color)); }
         .btn-dare { background: linear-gradient(135deg, #e11d48, var(--dare-color)); }
         .btn-next { background: linear-gradient(135deg, #7c3aed, #6366f1); width: 100%; margin-top: 15px; font-size: 0.9rem; }
+        .btn-end { background: linear-gradient(135deg, #dc2626, #b91c1c); width: 100%; margin-top: 10px; font-size: 0.9rem; }
+        .btn-exit { background: linear-gradient(135deg, #f97316, #ea580c); width: 100%; margin-top: 15px; font-size: 0.9rem; }
+        .btn-upload { background: linear-gradient(135deg, #d946ef, #a21caf); width: 100%; font-size: 0.8rem; text-align: center; display: block; box-sizing: border-box; cursor: pointer; border-radius: 12px; padding: 12px 10px; }
 
         /* --- DOUBLE DARE OVERLAY --- */
         #double-dare-banner {
             display: none; position: absolute; top: 0; left: 0; width: 100%;
             background: #ffe4e6; font-family: 'Bungee'; font-size: 0.8rem; color: #9f1239;
             padding: 8px 0; animation: flash 0.5s infinite alternate; font-weight: 900;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 15px rgba(0,0,0,0.2); z-index: 10;
         }
         @keyframes flash { from { opacity: 0.7; } to { opacity: 1; } }
+
+        /* --- UNIVERSAL THEATER MODAL --- */
+        #proof-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 2000; justify-content: center; align-items: center;
+            backdrop-filter: blur(8px);
+        }
+        .modal-content {
+            background: var(--td-panel); border: 3px solid var(--td-hotpink); border-radius: 24px;
+            padding: 25px; width: 90%; max-width: 600px; position: relative;
+            box-shadow: 0 0 50px rgba(244, 63, 94, 0.5); text-align: center;
+        }
+        .modal-close {
+            position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.5);
+            border: 2px solid var(--td-hotpink); color: white; border-radius: 50%;
+            width: 35px; height: 35px; font-family: 'Bungee'; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+        #modal-media-content {
+            background: #000; border-radius: 15px; overflow: hidden; min-height: 250px;
+            max-height: 400px; display: flex; align-items: center; justify-content: center;
+            margin-bottom: 15px; border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        #modal-media-content img, #modal-media-content video {
+            max-width: 100%; max-height: 380px; object-fit: contain;
+        }
+
+        /* Responsive Layout Collapse */
+        @media (max-width: 1024px) {
+            .game-layout {
+                flex-direction: column;
+                align-items: center;
+            }
+            .side-panel {
+                width: 100%;
+                height: 400px;
+            }
+            .main-column {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -105,94 +379,229 @@
     <div class="turn-header">
         <span>👉 ACTIVE TURN:</span>
         <span id="active-turn-user" style="color: #fff; text-shadow: 0 0 10px #fff;">
-            {{ room.target_player.username|default:"???" }}
+            {{ room.get_current_player.user.username|default:"???" }}
         </span>
     </div>
 
-    <div class="card">
-        <div id="double-dare-banner">⚠️ DOUBLE DARE ENFORCED ⚠️</div>
+    <!-- MAIN SCREEN GRID -->
+    <div class="game-layout">
 
-        <h3 style="font-family:'Bungee'; opacity:0.6; margin:0; letter-spacing:2px; color: var(--td-hotpink);">IN THE HOT SEAT</h3>
-        <div id="target-player" class="player-name">{{ room.target_player.username|default:"???" }}</div>
+        <!-- LEFT SIDEBAR: SCOREBOARD & LEADERBOARD -->
+        <div class="side-panel">
+            <h4 class="board-title">🏆 Scoreboard</h4>
+            <div id="scoreboard-list" style="flex: 1; overflow-y: auto;">
+                <p style="text-align: center; opacity: 0.5; margin-top: 50px;">Loading live scores...</p>
+            </div>
+        </div>
 
-        <!-- RESOURCE BARS (DYNAMIC USER CAPACITY STATUS) -->
-        <div class="resource-container">
-            <div class="bar-wrapper">
-                <span class="bar-label">Truths Left</span>
-                <div class="bar-outer">
-                    <div id="truth-bar" class="bar-inner" style="background: var(--truth-color); width: calc({{ me.truths_remaining }} * 20%);"></div>
+        <!-- CENTER PANEL: PLAYING CARD -->
+        <div class="main-column">
+            <div class="card">
+                <div id="double-dare-banner">⚠️ DOUBLE DARE ENFORCED ⚠️</div>
+
+                <h3 style="font-family:'Bungee'; opacity:0.6; margin:0; letter-spacing:2px; color: var(--td-hotpink); font-size: 0.9rem;">IN THE HOT SEAT</h3>
+                <div id="target-player" class="player-name">{{ room.get_current_player.user.username|default:"???" }}</div>
+
+                <!-- RESOURCE BARS -->
+                <div class="resource-container">
+                    <div class="bar-wrapper">
+                        <div class="bar-header-row">
+                            <span class="bar-label">Truths Left</span>
+                            <span id="truth-num" class="bar-number">
+                                {{ truths_remaining|default:5 }} / 5
+                            </span>
+                        </div>
+                        <div class="bar-outer">
+                            <div id="truth-bar" class="bar-inner" style="background: var(--truth-color); width: calc({{ truths_remaining|default:5 }} * 20%);"></div>
+                        </div>
+                    </div>
+                    <div class="bar-wrapper">
+                        <div class="bar-header-row">
+                            <span class="bar-label">Dares Left</span>
+                            <span id="dare-num" class="bar-number">
+                                {{ dares_remaining|default:3 }} / 3
+                            </span>
+                        </div>
+                        <div class="bar-outer">
+                            <div id="dare-bar" class="bar-inner" style="background: var(--dare-color); width: calc({{ dares_remaining|default:3 }} * 33.33%);"></div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div class="bar-wrapper">
-                <span class="bar-label">Dares Left</span>
-                <div class="bar-outer">
-                    <div id="dare-bar" class="bar-inner" style="background: var(--dare-color); width: calc({{ me.dares_remaining }} * 20%);"></div>
+
+                <!-- PLAY SPACE / PROMPT DISPLAY -->
+                <div id="prompt-display" class="prompt-text">
+                    {{ room.last_action_text|default:"Waiting for choice..." }}
                 </div>
+
+                <!-- UNIVERSAL ACTIVE MEDIA ALERT BUTTON -->
+                <div id="proof-alert-container" style="display: none; margin: 10px 0 15px 0;">
+                    <button class="td-btn" style="background: linear-gradient(135deg, var(--truth-color), #059669); font-size: 0.85rem; padding: 12px 20px; margin: 0 auto; display: inline-flex; align-items: center; gap: 8px; border-radius: 12px; box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);" onclick="openProofModalWithActive()">
+                        📸 NEW MEDIA UPLOADED - CLICK TO VIEW
+                    </button>
+                </div>
+
+                <!-- VOTE COMPONENT INNER PANEL -->
+                <div id="voting-panel" class="vote-card">
+                    <p class="vote-title">🗳️ Cast Your Vote: Did they pass?</p>
+                    <div class="vote-bar-container">
+                        <div id="vote-yes-progress" class="vote-yes-bar" style="width: 50%;">YES</div>
+                        <div id="vote-no-progress" class="vote-no-bar" style="width: 50%;">NO</div>
+                    </div>
+                    <div id="voting-actions-container" class="vote-btn-row">
+                        <button class="vote-btn vote-btn-yes" onclick="submitVote('yes')">👍 YES</button>
+                        <button class="vote-btn vote-btn-no" onclick="submitVote('no')">👎 NO</button>
+                    </div>
+                    <p id="voting-status-text" style="font-size: 0.75rem; opacity: 0.6; margin: 5px 0 0 0;"></p>
+                </div>
+
+                <!-- CONTROLS ZONE -->
+                <div id="controls-placement-zone">
+                    {% if is_hot_seat %}
+                    <div class="choice-group">
+                        <button id="btn-truth" class="td-btn btn-truth" onclick="sendChoice('pick_truth')">
+                            TRUTH
+                        </button>
+                        <button id="btn-dare" class="td-btn btn-dare" onclick="sendChoice('pick_dare')">
+                            DARE
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- HOST CONTROLS -->
+                {% if is_host %}
+                    <button class="td-btn btn-next" onclick="triggerSpin()">NEXT PLAYER</button>
+                    <button class="td-btn btn-end" onclick="endGameSession()">END GAME SESSION</button>
+                {% endif %}
+
+                <!-- NON-HOST/REGULAR PLAYER CONTROLS -->
+                {% if not is_host %}
+                    <button class="td-btn btn-exit" onclick="exitRoomSession()">EXIT ROOM</button>
+                {% endif %}
             </div>
         </div>
 
-        <div id="prompt-display" class="prompt-text">
-            {{ room.current_truth_dare|default:"Waiting for choice..." }}
-        </div>
-
-        <!-- CONTAINER FOR DYNAMIC INLINE GAME BUTTON INJECTION -->
-        <div id="controls-placement-zone">
-            {% if is_hot_seat %}
-            <div class="choice-group">
-                <button id="btn-truth" class="td-btn btn-truth" onclick="sendChoice('pick_truth')"
-                    {% if me.truth_streak >= 3 or me.truths_remaining <= 0 %}disabled{% endif %}>
-                    TRUTH
-                </button>
-                <button id="btn-dare" class="td-btn btn-dare" onclick="sendChoice('pick_dare')"
-                    {% if me.dares_remaining <= 0 %}disabled{% endif %}>
-                    DARE
-                </button>
+        <!-- RIGHT SIDEBAR: LIVE CHAT & PROOF UPLOAD -->
+        <div class="side-panel">
+            <h4 class="board-title">💬 Room Chat & Proofs</h4>
+            <div id="chat-box" class="chat-messages">
+                <p style="text-align: center; opacity: 0.3; margin-top: 50px;">No messages yet...</p>
             </div>
-            {% endif %}
+
+            <!-- INTEGRATED PROOF SYSTEM -->
+            <div id="chat-upload-wrapper" style="display: none; margin-bottom: 15px;">
+                <div style="flex-wrap: wrap; display: flex; gap: 8px; margin-bottom: 8px;">
+                    <button class="td-btn" style="background: linear-gradient(135deg, #06b6d4, #0891b2); font-size: 0.75rem; padding: 10px; margin: 0; flex: 1; border-radius: 10px; box-shadow: none;" onclick="triggerCameraCapture()">
+                        📸 TAKE PHOTO
+                    </button>
+                    <button id="btn-record" class="td-btn" style="background: linear-gradient(135deg, #ef4444, #dc2626); font-size: 0.75rem; padding: 10px; margin: 0; flex: 1; border-radius: 10px; box-shadow: none;" onclick="toggleMediaRecorder()">
+                        🎙️ RECORD PROOF
+                    </button>
+                </div>
+
+                <!-- SCREEN SHARE INTEGRATION BUTTON -->
+                <button id="btn-screen" class="td-btn" style="background: linear-gradient(135deg, #7c3aed, #4f46e5); font-size: 0.75rem; padding: 10px; margin: 0 0 8px 0; width: 100%; border-radius: 10px; box-shadow: none;" onclick="toggleScreenShare()">
+                    🖥️ SHARE SCREEN PROOF
+                </button>
+
+                <label for="proof-input" class="td-btn btn-upload" style="margin: 0; box-shadow: none;">
+                    📁 CHOOSE FROM GALLERY
+                </label>
+
+                <!-- Hidden Input Fields -->
+                <input type="file" id="proof-input" accept="image/*,video/*,audio/*" style="display:none;" onchange="submitProofFile('proof-input')">
+                <input type="file" id="camera-input" accept="image/*" capture="user" style="display:none;" onchange="submitProofFile('camera-input')">
+            </div>
+
+            <!-- Recording Status Display -->
+            <div id="recorder-preview-container" style="display: none; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 12px; margin-bottom: 12px; text-align: center;">
+                <p id="record-timer" style="font-family: 'Bungee'; color: #ef4444; font-size: 0.8rem; margin: 0 0 5px 0;">🔴 Recording... 0s</p>
+                <video id="live-preview" autoplay muted playsinline style="width: 100%; max-height: 150px; border-radius: 8px; background: #000; display: none;"></video>
+            </div>
+
+            <div class="chat-input-wrapper">
+                <input type="text" id="chat-text" class="chat-input" placeholder="Type message..." onkeypress="handleChatKey(event)">
+                <button class="chat-send-btn" onclick="sendChatMessage()">SEND</button>
+            </div>
         </div>
 
-        <!-- HOST CONTROLS -->
-        {% if is_host %}
-            <button class="td-btn btn-next" onclick="triggerSpin()">NEXT PLAYER</button>
-        {% endif %}
     </div>
 
+    <!-- UNIVERSAL THEATER MODAL OVERLAY -->
+    <div id="proof-modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeProofModal()">X</button>
+            <h3 style="font-family: 'Bungee', sans-serif; color: var(--td-hotpink); margin-top: 0; margin-bottom: 10px; font-size: 1.1rem; letter-spacing: 1px;">
+                👁️ Submission Viewer
+            </h3>
+
+            <div id="modal-media-content">
+                <p style="opacity: 0.5;">Ready to load content...</p>
+            </div>
+
+            <p id="modal-proof-caption" style="font-size: 0.9rem; font-weight: bold; color: #ffe4e6; margin-top: 10px;"></p>
+        </div>
+    </div>
+
+    <!-- CSRF Helper -->
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+
     <script>
-        // Store current user identity configuration to prevent component rendering blinking
         const current_user_session_name = "{{ request.user.username }}";
+        let lastMessagesJSON = "";
+        let currentActiveProofUrl = "";
+
+        // Prevent double clicks & pause polls while mutative operations process
+        let isWaitingForServer = false;
+
+        // Recording Session states
+        let mediaRecorder;
+        let recordedChunks = [];
+        let recordingTimer;
+        let secondsRecorded = 0;
+        let mediaStream;
+
+        // Track screen share specific session state
+        let isSharingScreen = false;
 
         async function syncStatus() {
+            if (isWaitingForServer) return;
+
             try {
-                // Fixed Cache Buster logic applied to secure actual database values
-                const res = await fetch("{% url 'get_room_status' room.room_code %}?_cb=" + Date.now());
+                const res = await fetch(window.location.pathname + "?format=json&_cb=" + Date.now());
                 if (!res.ok) return;
+                if (isWaitingForServer) return;
+
+                const contentType = res.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json")) return;
 
                 const data = await res.json();
 
-                // Kick out logic if session closes
                 if (data.status === 'FINISHED') {
-                    window.location.href = "{% url 'dashboard' %}";
+                    window.location.href = "http://127.0.0.1:8000/home/";
                     return;
                 }
 
-                // 1. FIXED TEMPLATE GUARD: Routes directly through layout coordinator view
-                if (data.game_type && data.game_type === 'most-likely') {
-                    console.log("[LAYOUT ENGINE] Re-routing state away from truth layout frame...");
-                    window.location.href = "{% url 'room_session' room.room_code %}";
+                // Check if the current user is no longer on the active player list (kicked or has self-removed)
+                if (data.scores && !data.scores.hasOwnProperty(current_user_session_name)) {
+                    window.location.href = "http://127.0.0.1:8000/home/";
                     return;
                 }
 
+                // 1. UPDATE TARGET PLAYER NAME & TOP BANNER
                 const nameEl = document.getElementById('target-player');
                 const topTurnEl = document.getElementById('active-turn-user');
                 const promptEl = document.getElementById('prompt-display');
                 const ddBanner = document.getElementById('double-dare-banner');
-                const truthBar = document.getElementById('truth-bar');
-                const dareBar = document.getElementById('dare-bar');
 
-                // Spin tracking setup matches string target comparisons cleanly
+                const truthBar = document.getElementById('truth-bar');
+                const truthNum = document.getElementById('truth-num');
+                const dareBar = document.getElementById('dare-bar');
+                const dareNum = document.getElementById('dare-num');
+
                 if (nameEl && data.target_player && nameEl.innerText.trim() !== data.target_player.trim()) {
                     nameEl.classList.remove('spin-anim');
-                    void nameEl.offsetWidth; // Clear browser painting layout thread context cache
+                    void nameEl.offsetWidth; // Force repaint
                     nameEl.classList.add('spin-anim');
 
                     nameEl.innerText = data.target_player;
@@ -204,86 +613,530 @@
                 }
 
                 if (ddBanner) {
-                    // Double Dare display checks player specific attributes
                     ddBanner.style.display = (data.truth_streak >= 3) ? 'block' : 'none';
                 }
 
-                // Synchronize visual metrics meters
-                if (truthBar && data.truths_remaining !== undefined) {
-                    truthBar.style.width = `calc(${data.truths_remaining} * 20%)`;
+                // 2. RESOURCE BARS (5 Max Truths, 3 Max Dares)
+                let truthsVal = 5;
+                let daresVal = 3;
+
+                if (data.truths_remaining !== undefined) {
+                    truthsVal = data.truths_remaining;
                 }
-                if (dareBar && data.dares_remaining !== undefined) {
-                    dareBar.style.width = `calc(${data.dares_remaining} * 20%)`;
+                if (data.dares_remaining !== undefined) {
+                    daresVal = data.dares_remaining;
                 }
 
-                // 2. DYNAMIC INPUT DISPATCH INTERFACE PANEL GENERATION
-                // Evaluates if the client viewing the browser page has stepped into the hot seat live
+                truthsVal = Math.min(5, Math.max(0, parseInt(truthsVal) || 0));
+                daresVal = Math.min(3, Math.max(0, parseInt(daresVal) || 0));
+
+                if (truthBar) truthBar.style.width = `${truthsVal * 20}%`;
+                if (truthNum) truthNum.innerText = `${truthsVal} / 5`;
+                if (dareBar) dareBar.style.width = `${daresVal * 33.33}%`;
+                if (dareNum) dareNum.innerText = `${daresVal} / 3`;
+
+                // 3. CASE-INSENSITIVE SEAT COMPARISON
+                const activePlayerNormalized = (data.target_player || "").trim().toLowerCase();
+                const sessionUserNormalized = current_user_session_name.trim().toLowerCase();
+                const isUserInHotSeat = data.is_hot_seat || (activePlayerNormalized !== "" && activePlayerNormalized === sessionUserNormalized);
+
+                // 4. ACTION INTERFACE BUTTON MANAGEMENT & CHAT UPLOAD TOGGLE
                 const controlZone = document.getElementById('controls-placement-zone');
-                if (controlZone) {
-                    if (data.target_player === current_user_session_name) {
-                        // Only generate the interactable panel buttons if they don't exist yet
-                        if (!document.getElementById('btn-truth') && !document.getElementById('btn-dare')) {
-                            const truthDisabled = (data.truth_streak >= 3 || data.truths_remaining <= 0) ? 'disabled' : '';
-                            const dareDisabled = (data.dares_remaining <= 0) ? 'disabled' : '';
+                const chatUploadWrapper = document.getElementById('chat-upload-wrapper');
 
+                if (isUserInHotSeat) {
+                    if (chatUploadWrapper) chatUploadWrapper.style.display = 'block';
+
+                    if (controlZone && !data.voting_active) {
+                        if (!document.getElementById('btn-truth') && !document.getElementById('btn-dare')) {
                             controlZone.innerHTML = `
                                 <div class="choice-group">
-                                    <button id="btn-truth" class="td-btn btn-truth" onclick="sendChoice('pick_truth')" ${truthDisabled}>TRUTH</button>
-                                    <button id="btn-dare" class="td-btn btn-dare" onclick="sendChoice('pick_dare')" ${dareDisabled}>DARE</button>
+                                    <button id="btn-truth" class="td-btn btn-truth" onclick="sendChoice('pick_truth')">
+                                        ${truthsVal <= 0 ? 'TRUTH (SWAPS TO DARE)' : 'TRUTH'}
+                                    </button>
+                                    <button id="btn-dare" class="td-btn btn-dare" onclick="sendChoice('pick_dare')">
+                                        ${daresVal <= 0 ? 'DARE (SWAPS TO TRUTH)' : 'DARE'}
+                                    </button>
                                 </div>
                             `;
                         } else {
-                            // If buttons are already present, update disabled states dynamically without wiping elements
                             const tBtn = document.getElementById('btn-truth');
                             const dBtn = document.getElementById('btn-dare');
-                            if (tBtn) tBtn.disabled = (data.truth_streak >= 3 || data.truths_remaining <= 0);
-                            if (dBtn) dBtn.disabled = (data.dares_remaining <= 0);
+                            if (tBtn) tBtn.innerText = truthsVal <= 0 ? 'TRUTH (SWAPS TO DARE)' : 'TRUTH';
+                            if (dBtn) dBtn.innerText = daresVal <= 0 ? 'DARE (SWAPS TO TRUTH)' : 'DARE';
+                        }
+                    } else if (controlZone) {
+                        controlZone.innerHTML = '';
+                    }
+                } else {
+                    if (chatUploadWrapper) chatUploadWrapper.style.display = 'none';
+                    if (controlZone) controlZone.innerHTML = '';
+                }
+
+                // 5. UPDATE VOTING POLL OVERLAY
+                const votePanel = document.getElementById('voting-panel');
+                if (votePanel) {
+                    if (data.voting_active) {
+                        votePanel.style.display = 'flex';
+
+                        const total = data.voting_yes_count + data.voting_no_count;
+                        const yesPct = total > 0 ? Math.round((data.voting_yes_count / total) * 100) : 50;
+                        const noPct = total > 0 ? Math.round((data.voting_no_count / total) * 100) : 50;
+
+                        document.getElementById('vote-yes-progress').style.width = `${yesPct}%`;
+                        document.getElementById('vote-yes-progress').innerText = `YES (${data.voting_yes_count})`;
+                        document.getElementById('vote-no-progress').style.width = `${noPct}%`;
+                        document.getElementById('vote-no-progress').innerText = `NO (${data.voting_no_count})`;
+
+                        const statusText = document.getElementById('voting-status-text');
+                        const actionsRow = document.getElementById('voting-actions-container');
+
+                        if (isUserInHotSeat) {
+                            actionsRow.style.display = 'none';
+                            statusText.innerText = "Waiting for other players to vote on your performance...";
+                        } else if (data.has_voted) {
+                            actionsRow.style.display = 'none';
+                            statusText.innerText = "Vote submitted! Waiting for remaining answers...";
+                        } else {
+                            actionsRow.style.display = 'flex';
+                            statusText.innerText = "Have they completed their task successfully?";
                         }
                     } else {
-                        // Wipe controls instantly if the person left the hot seat
-                        controlZone.innerHTML = '';
+                        votePanel.style.display = 'none';
                     }
                 }
 
+                // 6. UPDATE DYNAMIC PROOF HEADER VIEW ALERT BUTTON
+                const alertBtn = document.getElementById('proof-alert-container');
+                if (data.latest_proof_url) {
+                    currentActiveProofUrl = data.latest_proof_url;
+                    if (alertBtn) alertBtn.style.display = 'block';
+                } else {
+                    currentActiveProofUrl = "";
+                    if (alertBtn) alertBtn.style.display = 'none';
+                }
+
+                // 7. UPDATE LIVE SCOREBOARD
+                if (data.scores && document.getElementById('scoreboard-list')) {
+                    const scoreboardContainer = document.getElementById('scoreboard-list');
+                    let scoresHTML = '';
+                    for (const [username, pts] of Object.entries(data.scores)) {
+                        scoresHTML += `
+                            <div class="player-score-row">
+                                <span>👤 ${username}</span>
+                                <span class="score-badge">${pts} pts</span>
+                            </div>
+                        `;
+                    }
+                    scoreboardContainer.innerHTML = scoresHTML || '<p style="text-align: center; opacity: 0.5;">No scores active.</p>';
+                }
+
+                // 8. UPDATE CHAT SYSTEM
+                if (data.messages && document.getElementById('chat-box')) {
+                    const chatContainer = document.getElementById('chat-box');
+                    const currentMessagesJSON = JSON.stringify(data.messages);
+
+                    if (currentMessagesJSON !== lastMessagesJSON) {
+                        let chatHTML = '';
+                        data.messages.forEach(msg => {
+                            const sideClass = (msg.user === current_user_session_name) ? 'chat-me' : 'chat-other';
+                            let mediaContent = '';
+                            if (msg.file_url) {
+                                const url = msg.file_url;
+                                const lowerUrl = url.toLowerCase();
+
+                                if (lowerUrl.match(/\.(jpeg|jpg|gif|png|webp|bmp|svg)/)) {
+                                    mediaContent = `
+                                        <div style="margin-top: 8px; border-radius: 8px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); cursor: pointer;" onclick="openProofModal('${url}')">
+                                            <img src="${url}" style="max-width: 100%; max-height: 150px; object-fit: cover; display: block;">
+                                        </div>
+                                    `;
+                                } else if (lowerUrl.match(/\.(mp4|webm|ogg|mov)/)) {
+                                    mediaContent = `
+                                        <div style="margin-top: 8px; border-radius: 8px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); cursor: pointer;" onclick="openProofModal('${url}', 'video')">
+                                            <video src="${url}" style="max-width: 100%; max-height: 150px; object-fit: cover; display: block;" muted></video>
+                                        </div>
+                                    `;
+                                }
+                            }
+                            chatHTML += `
+                                <div class="chat-bubble ${sideClass}">
+                                    <strong>${msg.user}:</strong> ${msg.content}
+                                    ${mediaContent}
+                                </div>
+                            `;
+                        });
+                        chatContainer.innerHTML = chatHTML || '<p style="text-align: center; opacity: 0.3; margin-top: 50px;">No messages yet...</p>';
+                        chatContainer.scrollTop = chatContainer.scrollHeight;
+                        lastMessagesJSON = currentMessagesJSON;
+                    }
+                }
             } catch (err) {
-                console.error("Polled transaction loop failure: ", err);
+                console.error("Poller issue: ", err);
             }
         }
 
-        // 3. FIXED METHOD COMPATIBILITY MODIFIERS
-        // Changes parameter mapping payload key to 'action' to fit 'truth_dare_game' request logic directly
-        async function sendChoice(actionName) {
-            const fd = new FormData();
-            fd.append('action', actionName);
-            fd.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+        function sendChoice(choice) {
+            isWaitingForServer = true;
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-            try {
-                await fetch("{% url 'room_session' room.room_code %}", { method: 'POST', body: fd });
-                await syncStatus();
-            } catch(e) {
-                console.error("Choice post exception: ", e);
+            fetch(window.location.pathname, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: `action=${choice}`
+            })
+            .then(res => res.json())
+            .then(data => {
+                isWaitingForServer = false;
+                syncStatus();
+            })
+            .catch(err => {
+                isWaitingForServer = false;
+                console.error("Choice post failed: ", err);
+            });
+        }
+
+        function triggerSpin() {
+            isWaitingForServer = true;
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            fetch(window.location.pathname, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: 'action=next_player'
+            })
+            .then(res => res.json())
+            .then(data => {
+                isWaitingForServer = false;
+                syncStatus();
+            })
+            .catch(err => {
+                isWaitingForServer = false;
+                console.error("Rotation post failed: ", err);
+            });
+        }
+
+        function submitVote(choice) {
+            isWaitingForServer = true;
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            fetch(window.location.pathname, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: `action=vote_${choice}`
+            })
+            .then(res => res.json())
+            .then(data => {
+                isWaitingForServer = false;
+                syncStatus();
+            })
+            .catch(err => {
+                isWaitingForServer = false;
+                console.error("Vote failed: ", err);
+            });
+        }
+
+        function sendChatMessage() {
+            const txt = document.getElementById('chat-text').value.trim();
+            if (!txt) return;
+
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            fetch(window.location.pathname + "chat/send/", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: `content=${encodeURIComponent(txt)}`
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('chat-text').value = '';
+                syncStatus();
+            });
+        }
+
+        function handleChatKey(e) {
+            if (e.key === 'Enter') {
+                sendChatMessage();
             }
         }
 
-        async function triggerSpin() {
-            const fd = new FormData();
-            fd.append('action', 'next_player');
-            fd.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+        function openProofModal(url, type = 'image') {
+            const modal = document.getElementById('proof-modal');
+            const target = document.getElementById('modal-media-content');
+            target.innerHTML = '';
 
-            const targetPlayerEl = document.getElementById('target-player');
-            if (targetPlayerEl) targetPlayerEl.classList.add('spin-anim');
+            if (type === 'video') {
+                target.innerHTML = `<video src="${url}" controls autoplay style="max-width: 100%; max-height: 380px;"></video>`;
+            } else {
+                target.innerHTML = `<img src="${url}" style="max-width:100%; max-height:380px;">`;
+            }
+            modal.style.display = 'flex';
+        }
 
-            try {
-                await fetch("{% url 'room_session' room.room_code %}", { method: 'POST', body: fd });
-                await syncStatus();
-            } catch(e) {
-                console.error("Spin rotation request exception: ", e);
+        function openProofModalWithActive() {
+            if (currentActiveProofUrl) {
+                const isVid = currentActiveProofUrl.toLowerCase().match(/\.(mp4|webm|ogg|mov)/);
+                openProofModal(currentActiveProofUrl, isVid ? 'video' : 'image');
             }
         }
 
-        // Initialize engine sequence tracking instantly on arrival
+        function closeProofModal() {
+            document.getElementById('proof-modal').style.display = 'none';
+            document.getElementById('modal-media-content').innerHTML = '';
+        }
+
+        function triggerCameraCapture() {
+            document.getElementById('camera-input').click();
+        }
+
+        function submitProofFile(inputId) {
+            const fileInput = document.getElementById(inputId);
+            if (!fileInput.files.length) return;
+
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+
+            isWaitingForServer = true;
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            fetch(window.location.pathname + "proof/upload/", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                isWaitingForServer = false;
+                fileInput.value = '';
+                syncStatus();
+            })
+            .catch(err => {
+                isWaitingForServer = false;
+                console.error("Upload failed: ", err);
+            });
+        }
+
+        // --- LIVE SCREEN SHARE RECORDING API SYSTEM ---
+        function toggleScreenShare() {
+            const scrBtn = document.getElementById('btn-screen');
+            const previewContainer = document.getElementById('recorder-preview-container');
+            const livePreview = document.getElementById('live-preview');
+
+            if (isSharingScreen && mediaRecorder && mediaRecorder.state === "recording") {
+                mediaRecorder.stop();
+                return;
+            }
+
+            navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
+            .then(stream => {
+                isSharingScreen = true;
+                mediaStream = stream;
+                livePreview.srcObject = stream;
+                livePreview.style.display = "block";
+                previewContainer.style.display = "block";
+
+                recordedChunks = [];
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.ondataavailable = e => {
+                    if (e.data.size > 0) recordedChunks.push(e.data);
+                };
+
+                // When user stops sharing stream via browser bar or custom button click
+                mediaStream.getVideoTracks()[0].onended = () => {
+                    if (mediaRecorder.state === "recording") {
+                        mediaRecorder.stop();
+                    }
+                };
+
+                mediaRecorder.onstop = () => {
+                    const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                    const file = new File([blob], "screen_share_proof.webm", { type: "video/webm" });
+
+                    const formData = new FormData();
+                    formData.append('file', file);
+
+                    isWaitingForServer = true;
+                    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+                    fetch(window.location.pathname + "proof/upload/", {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': csrfToken,
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: formData
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        isWaitingForServer = false;
+                        syncStatus();
+                    });
+
+                    // Reset button and preview panes
+                    isSharingScreen = false;
+                    scrBtn.innerText = "🖥️ SHARE SCREEN PROOF";
+                    scrBtn.style.background = "linear-gradient(135deg, #7c3aed, #4f46e5)";
+                    previewContainer.style.display = "none";
+                    livePreview.style.display = "none";
+                    clearInterval(recordingTimer);
+
+                    if (mediaStream) {
+                        mediaStream.getTracks().forEach(track => track.stop());
+                    }
+                };
+
+                secondsRecorded = 0;
+                document.getElementById('record-timer').innerText = `🔴 Sharing Screen... 0s`;
+                recordingTimer = setInterval(() => {
+                    secondsRecorded++;
+                    document.getElementById('record-timer').innerText = `🔴 Sharing Screen... ${secondsRecorded}s`;
+                }, 1000);
+
+                mediaRecorder.start();
+                scrBtn.innerText = "⏹️ STOP SHARING";
+                scrBtn.style.background = "linear-gradient(135deg, #f59e0b, #d97706)";
+            })
+            .catch(err => {
+                console.error("Screen Share denied or failed: ", err);
+            });
+        }
+
+        // --- CAMERA AUDIO/VIDEO RECORDING API SYSTEM ---
+        function toggleMediaRecorder() {
+            const recBtn = document.getElementById('btn-record');
+            const previewContainer = document.getElementById('recorder-preview-container');
+            const livePreview = document.getElementById('live-preview');
+
+            if (mediaRecorder && mediaRecorder.state === "recording") {
+                mediaRecorder.stop();
+                recBtn.innerText = "🎙️ RECORD PROOF";
+                recBtn.style.background = "linear-gradient(135deg, #ef4444, #dc2626)";
+
+                if (mediaStream) {
+                    mediaStream.getTracks().forEach(track => track.stop());
+                }
+                previewContainer.style.display = "none";
+                livePreview.style.display = "none";
+                clearInterval(recordingTimer);
+            } else {
+                navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+                .then(stream => {
+                    mediaStream = stream;
+                    livePreview.srcObject = stream;
+                    livePreview.style.display = "block";
+                    previewContainer.style.display = "block";
+
+                    recordedChunks = [];
+                    mediaRecorder = new MediaRecorder(stream);
+                    mediaRecorder.ondataavailable = e => {
+                        if (e.data.size > 0) recordedChunks.push(e.data);
+                    };
+
+                    mediaRecorder.onstop = () => {
+                        const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                        const file = new File([blob], "live_proof.webm", { type: "video/webm" });
+
+                        const formData = new FormData();
+                        formData.append('file', file);
+
+                        isWaitingForServer = true;
+                        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+                        fetch(window.location.pathname + "proof/upload/", {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRFToken': csrfToken,
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            body: formData
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            isWaitingForServer = false;
+                            syncStatus();
+                        });
+                    };
+
+                    secondsRecorded = 0;
+                    document.getElementById('record-timer').innerText = `🔴 Recording... 0s`;
+                    recordingTimer = setInterval(() => {
+                        secondsRecorded++;
+                        document.getElementById('record-timer').innerText = `🔴 Recording... ${secondsRecorded}s`;
+                    }, 1000);
+
+                    mediaRecorder.start();
+                    recBtn.innerText = "⏹️ STOP RECORDING";
+                    recBtn.style.background = "linear-gradient(135deg, #f59e0b, #d97706)";
+                })
+                .catch(err => {
+                    alert("Unable to access camera or microphone devices.");
+                });
+            }
+        }
+
+        function endGameSession() {
+            if (!confirm("Are you sure you want to end this game session?")) return;
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            fetch(window.location.pathname, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: 'action=end_session'
+            })
+            .then(res => res.json())
+            .then(data => {
+                window.location.href = "/";
+            });
+        }
+
+        function exitRoomSession() {
+            if (!confirm("Are you sure you want to exit this room?")) return;
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            fetch(window.location.pathname, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: 'action=exit_room'
+            })
+            .then(res => res.json())
+            .then(data => {
+                window.location.href = "http://127.0.0.1:8000/home/";
+            })
+            .catch(err => {
+                console.error("Failed to exit room: ", err);
+            });
+        }
+
+        // Initialize sync cycle
         syncStatus();
-        setInterval(syncStatus, 2000);
+        setInterval(syncStatus, 3000);
     </script>
 </body>
 </html>
