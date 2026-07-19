@@ -126,7 +126,19 @@ CHANNEL_LAYERS = {
 
 STATIC_URL = 'static/'
 import os
+import os
+from pathlib import Path
 
+# ... (Keep your existing BASE_DIR configuration near the top)
+
+# Scroll down to your static settings and update/add these lines:
+STATIC_URL = '/static/'
+
+# This is the exact line Django is looking for:
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# If you are using WhiteNoise to serve static files on Render:
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # Media files configuration (for user uploaded content)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
